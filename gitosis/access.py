@@ -1,4 +1,7 @@
 import os, logging
+import httplib
+import simplejson as json
+
 from ConfigParser import NoSectionError, NoOptionError
 
 from gitosis import group
