@@ -110,7 +110,7 @@ def check_with_rsp(config, user, mode, path):
         path = basename
 
     conn = httplib.HTTPConnection(access_url)
-    conn.request("GET", "/%s/committers/%s" % (path, user))
+    conn.request("GET", "/hosts/%s/committers/%s" % (path, user))
     http_response = conn.getresponse()
 
     if http_response.status in range(200,300):
@@ -121,7 +121,7 @@ def check_with_rsp(config, user, mode, path):
     else:
         return None
 
-    if response['canCommit'] == "1":
+    if response['canCommit']:
         prefix = 'repositories'
         mapping = path
         return (prefix, mapping)
