@@ -29,7 +29,7 @@ def amqp_hook(config):
         use_amqp = config.get("gitosis", "amqp")
     except (ConfigParser.NoSectionError,
             ConfigParser.NoOptionError):
-        use_amqp = false
+        return False
 
     if use_amqp:
         try:
@@ -64,6 +64,7 @@ def send_amqp_message(host, user_id, password, ssl=True,
 
     ch.close()
     conn.close()
+    return True
 
 def post_update(cfg, git_dir):
     export = os.path.join(git_dir, 'gitosis-export')
