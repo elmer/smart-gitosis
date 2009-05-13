@@ -29,7 +29,7 @@ def main():
     ch = conn.channel()
     ch.access_request('/data', active=True, read=True)
 
-    ch.exchange_declare('gitosis.post_update', 'direct', auto_delete=False, durable=False)
+    ch.exchange_declare('gitosis.post_update', 'direct', auto_delete=False, durable=True)
     ch.queue_declare(queue='gitosis.post_update', durable=True, exclusive=False, auto_delete=False) 
     ch.queue_bind('gitosis.post_update', 'gitosis.post_update')
     ch.basic_consume('gitosis.post_update', callback=callback)
