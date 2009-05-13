@@ -34,7 +34,7 @@ def main():
 
     ch = conn.channel()
     ch.access_request('/data', active=True, write=True)
-    ch.exchange_declare(exchange='gitosis.post_update', type='direct', auto_delete=False, durable=True)
+    #ch.exchange_declare(exchange='gitosis.post_update', type='direct', auto_delete=False, durable=True)
     msg = amqp.Message(msg_body, content_type='text/plain')
     ch.basic_publish(msg, exchange='gitosis.post_update')
     ch.close()
