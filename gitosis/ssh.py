@@ -41,7 +41,7 @@ def generateAuthorizedKeys(keys):
     for (user, key) in keys:
         yield TEMPLATE % dict(user=user, key=key)
 
-_COMMAND_RE = re.compile('^command="(/[^ "]+/)?gitosis-serve [^"]+",no-port-forw'
+_COMMAND_RE = re.compile('^command="(PATH=/opt/local/bin) gitosis-serve [^"]+",no-port-forw'
                          +'arding,no-X11-forwarding,no-agent-forwardi'
                          +'ng,no-pty .*')
 
