@@ -17,8 +17,6 @@ from gitosis import app
 from gitosis import util
 
 def build_amqp_resources(ch):
-    ch.exchange_declare('gitosis.post_update', 'direct', auto_delete=False,
-                        durable=False)
 
 def amqp_hook(config):
     use_amqp = config.getboolean("amqp", "use_amqp")
@@ -39,16 +37,19 @@ def send_amqp_message(host, user_id="guest", password="guest", ssl=True,
     import amqplib.client_0_8 as amqp
     import simplejson as json 
 
+    m = "git_repository_updated"
+
+    log = logging.getLogger('gitosis.run_hook')
+    log.info('Sending "%s" to: %s' % (m, exchange))
+
+    msg = amqp.Message(m, content_type='text/plain')
+
     conn = amqp.Connection(host, userid=user_id, password=password, ssl=ssl,
                            exchange=exchange)
-
     ch = conn.channel()
     ch.access_request('/data', active=True, write=True)
-
-    build_amqp_resources(ch)
-    msg = amqp.Message("git_repository_updated", content_type='text/plain')
+    ch.exchange_declare(exchange, 'fanout', auto_delete=False, durable=True)
     ch.basic_publish(msg, exchange)
-
     ch.close()
     conn.close()
     return True
