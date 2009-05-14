@@ -3,43 +3,38 @@
 import sys
 import time
 from optparse import OptionParser
+from gitosis.util import read_config
+
 
 import amqplib.client_0_8 as amqp
 
 def main():
-    parser = OptionParser(usage='usage: %prog [options] message\nexample: %prog hello world')
-    parser.add_option('--host', dest='host',
-                        help='AMQP server to connect to (default: %default)',
-                        default='localhost')
-    parser.add_option('-u', '--userid', dest='userid',
-                        help='userid to authenticate as (default: %default)',
-                        default='guest')
-    parser.add_option('-p', '--password', dest='password',
-                        help='password to authenticate with (default: %default)',
-                        default='guest')
-    parser.add_option('--ssl', dest='ssl', action='store_true',
-                        help='Enable SSL (default: not enabled)',
-                        default=False)
-
+    parser = OptionParser()
+    parser.add_option('--config', metavar='FILE', help='read config from FILE')
     options, args = parser.parse_args()
 
     if not args:
         parser.print_help()
         sys.exit(1)
 
-    msg_body = ' '.join(args)
+    config = read_config(options.config)
+    host = config.get("amqp", "host")
+    user_id = config.get("amqp", "user_id")
+    password = config.get("amqp", "password")
+    ssl = config.getboolean("amqp", "ssl")
 
-    conn = amqp.Connection(options.host, userid=options.userid, password=options.password,
-                           ssl=options.ssl)
+
+    msg_body = ' '.join(args)
+    msg = amqp.Message(msg_body, content_type='text/plain')
+
+    conn = amqp.Connection(host, userid=user_id, password=password, ssl=ssl)
 
     ch = conn.channel()
     ch.access_request('/data', active=True, write=True)
-    #ch.exchange_declare(exchange='gitosis.post_update', type='direct', auto_delete=False, durable=True)
-    msg = amqp.Message(msg_body, content_type='text/plain')
+    ch.exchange_declare('gitosis.post_update', 'fanout', auto_delete=False)
     ch.basic_publish(msg, exchange='gitosis.post_update')
     ch.close()
     conn.close()
 
 if __name__ == '__main__':
     main()
-

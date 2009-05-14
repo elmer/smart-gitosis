@@ -7,15 +7,6 @@ import ConfigParser
 
 log = logging.getLogger('gitosis.app')
 
-class CannotReadConfigError(Exception):
-    """Unable to read config file"""
-
-    def __str__(self):
-        return '%s: %s' % (self.__doc__, ': '.join(self.args))
-
-class ConfigFileDoesNotExistError(CannotReadConfigError):
-    """Configuration does not exist"""
-
 class App(object):
     name = None
 
@@ -28,12 +19,7 @@ class App(object):
         self.setup_basic_logging()
         parser = self.create_parser()
         (options, args) = parser.parse_args()
-        cfg = self.create_config(options)
-        try:
-            self.read_config(options, cfg)
-        except CannotReadConfigError, e:
-            log.error(str(e))
-            sys.exit(1)
+        cfg = read_config(options.config)
         self.setup_logging(cfg)
         self.handle_args(parser, cfg, options, args)
 
@@ -51,25 +37,6 @@ class App(object):
                           )
 
         return parser
-
-    def create_config(self, options):
-        cfg = ConfigParser.RawConfigParser()
-        return cfg
-
-    def read_config(self, options, cfg):
-        try:
-            conffile = file(options.config)
-        except (IOError, OSError), e:
-            if e.errno == errno.ENOENT:
-                # special case this because gitosis-init wants to
-                # ignore this particular error case
-                raise ConfigFileDoesNotExistError(str(e))
-            else:
-                raise CannotReadConfigError(str(e))
-        try:
-            cfg.readfp(conffile)
-        finally:
-            conffile.close()
 
     def setup_logging(self, cfg):
         try:

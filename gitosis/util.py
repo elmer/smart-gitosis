@@ -1,6 +1,16 @@
+from __future__ import with_statement
 import errno
 import os
-from ConfigParser import NoSectionError, NoOptionError
+import ConfigParser
+
+class CannotReadConfigError(Exception):
+    """Unable to read config file"""
+
+    def __str__(self):
+        return '%s: %s' % (self.__doc__, ': '.join(self.args))
+
+class ConfigFileDoesNotExistError(CannotReadConfigError):
+    """Configuration does not exist"""
 
 def mkdir(*a, **kw):
     try:
@@ -15,7 +25,7 @@ def getRepositoryDir(config):
     repositories = os.path.expanduser('~')
     try:
         path = config.get('gitosis', 'repositories')
-    except (NoSectionError, NoOptionError):
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
         repositories = os.path.join(repositories, 'repositories')
     else:
         repositories = os.path.join(repositories, path)
@@ -34,3 +44,16 @@ def getSSHAuthorizedKeysPath(config):
     except (NoSectionError, NoOptionError):
         path = os.path.expanduser('~/.ssh/authorized_keys')
     return path
+
+def read_config(file_name):
+    cfg = ConfigParser.RawConfigParser()
+
+    try:
+        with open(os.path.expanduser(file_name)) as f:
+            cfg.readfp(f)
+    except (IOError, OSError), e:
+        if e.errno == errno.ENOENT:
+            raise ConfigFileDoesNotExistError(str(e))
+        else:
+            raise CannotReadConfigError(str(e))
+    return cfg

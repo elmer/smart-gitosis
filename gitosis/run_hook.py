@@ -19,41 +19,28 @@ from gitosis import util
 def build_amqp_resources(ch):
     ch.exchange_declare('gitosis.post_update', 'direct', auto_delete=False,
                         durable=False)
-    ch.queue_declare(queue="gitosis.post_update", durable=True,
-                     exclusive=False, auto_delete=False)
-
-    ch.queue_bind("gitosis.post_update", 'gitosis.post_update')
 
 def amqp_hook(config):
-    try:
-        use_amqp = config.get("gitosis", "amqp")
-    except (ConfigParser.NoSectionError,
-            ConfigParser.NoOptionError):
-        return False
+    use_amqp = config.getboolean("amqp", "use_amqp")
 
     if use_amqp:
-        try:
-            amqp_host = config.get("gitosis", "amqp_host")
-            amqp_user = config.get("gitosis", "amqp_user")
-            amqp_password = config.get("gitosis", "amqp_password")
-            amqp_ssl = config.get("gitosis", "amqp_ssl")
-            amqp_exchange = config.get("gitosis", "amqp_exchange")
+        host = config.get("amqp", "host")
+        user_id = config.get("amqp", "user_id")
+        password = config.get("amqp", "password")
+        ssl = config.getboolean("amqp", "ssl")
+        exchange = config.get("amqp", "exchange")
 
-            return send_amqp_message(amqp_host, amqp_user, amqp_password,
-                                     ssl=amqp_ssl, exchange=amqp_exchange)
-
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError):
-            return False
-    else:
-        return False
+        return send_amqp_message(host, userid=user_id, password=password,
+                                 ssl=ssl, exchange=exchange)
+    return False
 
 def send_amqp_message(host, user_id, password, ssl=True,
                       exchange="gitosis.post_update"):
     import amqplib.client_0_8 as amqp
     import simplejson as json 
 
-    conn = amqp.Connection(host, userid=userid, password=password, ssl=ssl)
+    conn = amqp.Connection(host, userid=user_id, password=password, ssl=ssl,
+                           exchange=exchange)
 
     ch = conn.channel()
     ch.access_request('/data', active=True, write=True)
