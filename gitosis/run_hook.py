@@ -16,8 +16,6 @@ from gitosis import gitdaemon
 from gitosis import app
 from gitosis import util
 
-def build_amqp_resources(ch):
-
 def amqp_hook(config):
     use_amqp = config.getboolean("amqp", "use_amqp")
 
