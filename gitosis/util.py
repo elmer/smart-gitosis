@@ -34,14 +34,14 @@ def getRepositoryDir(config):
 def getGeneratedFilesDir(config):
     try:
         generated = config.get('gitosis', 'generate-files-in')
-    except (NoSectionError, NoOptionError):
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
         generated = os.path.expanduser('~/gitosis')
     return generated
 
 def getSSHAuthorizedKeysPath(config):
     try:
         path = config.get('gitosis', 'ssh-authorized-keys-path')
-    except (NoSectionError, NoOptionError):
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
         path = os.path.expanduser('~/.ssh/authorized_keys')
     return path
 
