@@ -30,11 +30,11 @@ def amqp_hook(config):
         ssl = config.getboolean("amqp", "ssl")
         exchange = config.get("amqp", "exchange")
 
-        return send_amqp_message(host, userid=user_id, password=password,
+        return send_amqp_message(host, user_id=user_id, password=password,
                                  ssl=ssl, exchange=exchange)
     return False
 
-def send_amqp_message(host, user_id, password, ssl=True,
+def send_amqp_message(host, user_id="guest", password="guest", ssl=True,
                       exchange="gitosis.post_update"):
     import amqplib.client_0_8 as amqp
     import simplejson as json 
