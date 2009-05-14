@@ -4,6 +4,7 @@ import logging
 import optparse
 import errno
 import ConfigParser
+from util import read_config
 
 log = logging.getLogger('gitosis.app')
 
