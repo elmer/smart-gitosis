@@ -30,7 +30,7 @@ def main():
     password = config.get("amqp", "password")
     ssl = config.getboolean("amqp", "ssl")
 
-    conn = amqp.Connection(host, userid=user_id, password="password", ssl=ssl)
+    conn = amqp.Connection(host, userid=user_id, password=password, ssl=ssl)
     ch = conn.channel()
     ch.access_request('/data', active=True, read=True)
 
