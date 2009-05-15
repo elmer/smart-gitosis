@@ -20,8 +20,8 @@ def update_or_create_repository(repository, projects_dir, git_user="git",
     
     if path.exists(project_path):
         cmd = ["cd", project_path, "&&", "git", "pull"]
-        return call(cmd)
         print("Running %s" % cmd)
+        return call(cmd)
     else:
         clone_uri = "%s@%s:%s" % (git_user, git_server, repository)
         cmd = ["git", "clone", clone_uri, project_path]
