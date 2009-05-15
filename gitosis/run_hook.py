@@ -21,11 +21,11 @@ from gitosis import util
 
 log = logging.getLogger('gitosis.run_hook')
 
-def amqp_config(cfg):
+def amqp_config(config):
     return {
         'host': config.get("amqp", "host"),
         'user_id': config.get("amqp", "user_id"),
-        'password': = config.get("amqp", "password"),
+        'password': config.get("amqp", "password"),
         'ssl': config.getboolean("amqp", "ssl"),
         'exchange': config.get("amqp", "exchange"),
         }
@@ -69,7 +69,7 @@ def post_update(cfg, git_dir):
 
     cfg.read(os.path.join(export, '..', 'gitosis.conf'))
     
-    use_amqp = config.getboolean("amqp", "use_amqp")
+    use_amqp = cfg.getboolean("amqp", "use_amqp")
     if use_amqp:
         send_amqp_message(data={'repository': git_dir}, **amqp_config(cfg))
 
