@@ -27,7 +27,7 @@ def update_or_create_repository(repository, projects_dir, git_user="git",
 
 def callback_wrapper(projects_dir, git_user, git_server):
     def callback(msg):
-        print("Received: %s" % msg)
+        print("Received: %s" % msg.body)
         data = json.loads(msg.body)
         repository = data['repository']
         update_or_create_repository(data['repository'], projects_dir, git_user, git_server)
