@@ -45,7 +45,7 @@ def main():
     user_id = config.get("amqp", "user_id")
     password = config.get("amqp", "password")
     ssl = config.getboolean("amqp", "ssl")
-    exchange = config.getboolean("amqp", "exchange")
+    exchange = config.get("amqp", "exchange")
     projects_dir = config.get("rsp", "projects_dir")
     git_user = config.get("rsp", "git_user")
     git_server = config.get("rsp", "git_server")
