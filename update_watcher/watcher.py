@@ -7,7 +7,7 @@ from gitosis.util import read_config
 from os import path, mkdir
 import subprocess
 
-#import simplejson as json
+import simplejson as json
 
 def call(cmd):
     p = Popen(cmd, stdout=open(devnull, 'w'))
@@ -16,7 +16,7 @@ def call(cmd):
 
 def update_or_create_repository(repository, projects_dir, git_user="git",
                                 git_server="localhost"):
-    project_path = path.join(projects_dir, repository))
+    project_path = path.join(projects_dir, repository)
     
     if path.exists(project_path):
         return call(["cd", project_path, "&&", "git", "pull"])
