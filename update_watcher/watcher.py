@@ -4,7 +4,7 @@ import sys
 import amqplib.client_0_8 as amqp
 from optparse import OptionParser
 from gitosis.util import read_config
-from os import path, mkdir
+from os import path, mkdir, devnull
 from subprocess import Popen
 
 import simplejson as json
