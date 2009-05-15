@@ -116,6 +116,10 @@ def should_send_message( cfg, user, command ):
         # if/when needed
         raise UnknownCommandError()
 
+    ## only send the message if we have use_amqp set in the config file...
+    if not cfg.getboolean("amqp", "use_amqp"):
+        return False
+
     if verb == 'git':
         try:
             subverb, args = args.split(None, 1)
