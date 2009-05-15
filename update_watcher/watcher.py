@@ -19,10 +19,14 @@ def update_or_create_repository(repository, projects_dir, git_user="git",
     project_path = path.join(projects_dir, repository)
     
     if path.exists(project_path):
-        return call(["cd", project_path, "&&", "git", "pull"])
+        cmd = ["cd", project_path, "&&", "git", "pull"]
+        return call(cmd)
+        print("Running %s" % cmd)
     else:
         clone_uri = "%s@%s:%s" % (git_user, git_server, repository)
-        return call(["git", "clone", clone_uri, project_path])
+        cmd = ["git", "clone", clone_uri, project_path]
+        print("Running %s" % cmd)
+        return call(cmd)
         
 
 def callback_wrapper(projects_dir, git_user, git_server):
