@@ -2,12 +2,12 @@
 
 import sys
 import amqplib.client_0_8 as amqp
+import simplejson as json
+
 from optparse import OptionParser
 from gitosis.util import read_config
 from os import path, mkdir, devnull
 from subprocess import Popen
-
-import simplejson as json
 
 def call(cmd):
     p = Popen(cmd, stdout=open(devnull, 'w'))
