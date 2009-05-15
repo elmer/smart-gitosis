@@ -16,7 +16,7 @@ def call(cmd):
 
 def update_or_create_repository(repository, projects_dir, git_user="git",
                                 git_server="localhost"):
-    project_path = path.join(projects_dir, repository)
+    project_path = path.join(projects_dir, repository[:-4])
     
     if path.exists(project_path):
         chdir(project_path)
