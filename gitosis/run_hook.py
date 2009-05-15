@@ -16,28 +16,25 @@ from gitosis import gitdaemon
 from gitosis import app
 from gitosis import util
 
-def amqp_hook(config):
-    use_amqp = config.getboolean("amqp", "use_amqp")
+log = logging.getLogger('gitosis.run_hook')
 
-    if use_amqp:
-        host = config.get("amqp", "host")
-        user_id = config.get("amqp", "user_id")
-        password = config.get("amqp", "password")
-        ssl = config.getboolean("amqp", "ssl")
-        exchange = config.get("amqp", "exchange")
+def amqp_config(cfg):
+    return {
+        'host': config.get("amqp", "host"),
+        'user_id': config.get("amqp", "user_id"),
+        'password': = config.get("amqp", "password"),
+        'ssl': config.getboolean("amqp", "ssl"),
+        'exchange': config.get("amqp", "exchange"),
+        }
+    
 
-        return send_amqp_message(host, user_id=user_id, password=password,
-                                 ssl=ssl, exchange=exchange)
-    return False
-
-def send_amqp_message(host, user_id="guest", password="guest", ssl=True,
-                      exchange="gitosis.post_update"):
+def send_amqp_message(host="localhost", user_id="guest", password="guest", ssl=True,
+                      exchange="gitosis.post_update", data={}):
     import amqplib.client_0_8 as amqp
     import simplejson as json 
 
-    m = "git_repository_updated"
+    m = json.dumps(data)
 
-    log = logging.getLogger('gitosis.run_hook')
     log.info('Sending "%s" to: %s' % (m, exchange))
 
     msg = amqp.Message(m, content_type='text/plain')
@@ -54,6 +51,7 @@ def send_amqp_message(host, user_id="guest", password="guest", ssl=True,
 
 def post_update(cfg, git_dir):
     export = os.path.join(git_dir, 'gitosis-export')
+
     try:
         shutil.rmtree(export)
     except OSError, e:
@@ -61,16 +59,19 @@ def post_update(cfg, git_dir):
             pass
         else:
             raise
+
     repository.export(git_dir=git_dir, path=export)
+
     os.rename(
         os.path.join(export, 'gitosis.conf'),
         os.path.join(export, '..', 'gitosis.conf'),
         )
-    # re-read config to get up-to-date settings
+
     cfg.read(os.path.join(export, '..', 'gitosis.conf'))
     
-    #send a message to the amqp server that there's been an update
-    amqp_hook(config=cfg)
+    use_amqp = config.getboolean("amqp", "use_amqp")
+    if use_amqp:
+        send_amqp_message(data={'repository': git_dir}, **amqp_config(cfg))
 
     gitweb.set_descriptions(
         config=cfg,
@@ -103,7 +104,6 @@ class Main(app.App):
         except ValueError:
             parser.error('Missing argument HOOK.')
 
-        log = logging.getLogger('gitosis.run_hook')
         os.umask(0022)
 
         git_dir = os.environ.get('GIT_DIR')
