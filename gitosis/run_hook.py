@@ -9,9 +9,6 @@ import sys
 import shutil
 import ConfigParser
 
-import amqplib.client_0_8 as amqp
-import simplejson as json 
-
 from gitosis import repository
 from gitosis import ssh
 from gitosis import gitweb
@@ -20,34 +17,6 @@ from gitosis import app
 from gitosis import util
 
 log = logging.getLogger('gitosis.run_hook')
-
-def amqp_config(config):
-    return {
-        'host': config.get("amqp", "host"),
-        'user_id': config.get("amqp", "user_id"),
-        'password': config.get("amqp", "password"),
-        'ssl': config.getboolean("amqp", "ssl"),
-        'exchange': config.get("amqp", "exchange"),
-        }
-    
-
-def send_amqp_message(host="localhost", user_id="guest", password="guest", ssl=True,
-                      exchange="gitosis.post_update", data={}):
-    m = json.dumps(data)
-
-    log.info('Sending "%s" to: %s' % (m, exchange))
-
-    msg = amqp.Message(m, content_type='text/plain')
-
-    conn = amqp.Connection(host, userid=user_id, password=password, ssl=ssl,
-                           exchange=exchange)
-    ch = conn.channel()
-    ch.access_request('/data', active=True, write=True)
-    ch.exchange_declare(exchange, 'fanout', auto_delete=False, durable=True)
-    ch.basic_publish(msg, exchange)
-    ch.close()
-    conn.close()
-    return True
 
 def post_update(cfg, git_dir):
     export = os.path.join(git_dir, 'gitosis-export')
@@ -68,10 +37,6 @@ def post_update(cfg, git_dir):
         )
 
     cfg.read(os.path.join(export, '..', 'gitosis.conf'))
-    
-    use_amqp = cfg.getboolean("amqp", "use_amqp")
-    if use_amqp:
-        send_amqp_message(data={'repository': git_dir}, **amqp_config(cfg))
 
     gitweb.set_descriptions(
         config=cfg,

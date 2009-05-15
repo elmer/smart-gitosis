@@ -15,6 +15,9 @@ from gitosis import gitdaemon
 from gitosis import app
 from gitosis import util
 
+import amqplib.client_0_8 as amqp
+import simplejson as json 
+
 log = logging.getLogger('gitosis.serve')
 
 ALLOW_RE = re.compile("^'/*(?P<path>[a-zA-Z0-9][a-zA-Z0-9@._-]*(/[a-zA-Z0-9][a-zA-Z0-9@._-]*)*)'$")
@@ -52,6 +55,86 @@ class WriteAccessDenied(AccessDenied):
 
 class ReadAccessDenied(AccessDenied):
     """Repository read access denied"""
+
+def amqp_config(config):
+    return {
+        'host': config.get("amqp", "host"),
+        'user_id': config.get("amqp", "user_id"),
+        'password': config.get("amqp", "password"),
+        'ssl': config.getboolean("amqp", "ssl"),
+        'exchange': config.get("amqp", "exchange"),
+        }
+    
+def send_amqp_message(host="localhost", user_id="guest", password="guest", ssl=True,
+                      exchange="gitosis.post_update", data={}):
+    m = json.dumps(data)
+
+    log.info('Sending "%s" to: %s' % (m, exchange))
+
+    msg = amqp.Message(m, content_type='text/plain')
+
+    conn = amqp.Connection(host, userid=user_id, password=password, ssl=ssl)
+
+    ch = conn.channel()
+    ch.access_request('/data', active=True, write=True)
+    ch.exchange_declare(exchange, 'fanout', auto_delete=False)
+    ch.basic_publish(msg, exchange)
+    ch.close()
+    conn.close()
+    return True
+
+def repository_path( cfg, user, command ):
+    try:
+        verb, args = command.split(None, 1)
+    except ValueError:
+        # all known "git-foo" commands take one argument; improve
+        # if/when needed
+        raise UnknownCommandError()
+    if verb == 'git':
+        try:
+            subverb, args = args.split(None, 1)
+        except ValueError:
+            # all known "git foo" commands take one argument; improve
+            # if/when needed
+            raise UnknownCommandError()
+        verb = '%s %s' % (verb, subverb)
+
+    match = ALLOW_RE.match(args)
+    if match is None:
+        raise UnsafeArgumentsError()
+    path = match.group('path')
+    return path
+
+## determines if we should send a message or not
+def should_send_message( cfg, user, command ):
+    if '\n' in command:
+        raise CommandMayNotContainNewlineError()
+    try:
+        verb, args = command.split(None, 1)
+    except ValueError:
+        # all known "git-foo" commands take one argument; improve
+        # if/when needed
+        raise UnknownCommandError()
+
+    if verb == 'git':
+        try:
+            subverb, args = args.split(None, 1)
+        except ValueError:
+            # all known "git foo" commands take one argument; improve
+            # if/when needed
+            raise UnknownCommandError()
+        verb = '%s %s' % (verb, subverb)
+
+    match = ALLOW_RE.match(args)
+    if match is None:
+        raise UnsafeArgumentsError()
+    path = match.group('path')
+
+    if ( verb in COMMANDS_WRITE ):
+        return True
+    else:
+        return False
+
 
 def serve(
     cfg,
@@ -162,6 +245,7 @@ def serve(
         )
     return newcmd
 
+
 class Main(app.App):
     def create_parser(self):
         parser = super(Main, self).create_parser()
@@ -200,7 +284,20 @@ class Main(app.App):
             main_log.error('%s', e)
             sys.exit(1)
 
+        ## if we are writing then we need to 
+
         main_log.debug('Serving %s', newcmd)
-        os.execvp('git', ['git', 'shell', '-c', newcmd])
-        main_log.error('Cannot execute git-shell.')
-        sys.exit(1)
+        pid = os.fork()
+        if not pid:
+            os.execvp('git', ['git', 'shell', '-c', newcmd])
+            main_log.error('Cannot execute git-shell.')
+            sys.exit(1)
+        else:
+            os.wait()
+            try:
+                if (should_send_message( cfg=cfg, user=user, command=cmd )):
+                    send_amqp_message(data={'repository': repository_path(cfg=cfg, user=user, command=cmd)}, **amqp_config(cfg))
+            except ServingError, e:
+                main_log.error('%s', e)
+                sys.exit(1)
+
