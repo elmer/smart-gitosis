@@ -6,7 +6,7 @@ import simplejson as json
 
 from optparse import OptionParser
 from gitosis.util import read_config
-from os import path, mkdir, devnull
+from os import path, mkdir, devnull, chdir
 from subprocess import Popen
 
 def call(cmd):
@@ -19,7 +19,8 @@ def update_or_create_repository(repository, projects_dir, git_user="git",
     project_path = path.join(projects_dir, repository)
     
     if path.exists(project_path):
-        cmd = ["cd", project_path, "&&", "git", "pull"]
+        chdir(project_path)
+        cmd = ["git", "pull"]
         print("Running %s" % cmd)
         return call(cmd)
     else:
