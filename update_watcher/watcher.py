@@ -5,7 +5,7 @@ import amqplib.client_0_8 as amqp
 from optparse import OptionParser
 from gitosis.util import read_config
 from os import path, mkdir
-import subprocess
+from subprocess import Popen
 
 import simplejson as json
 
@@ -53,6 +53,7 @@ def main():
     callback = callback_wrapper(projects_dir, git_user, git_server)
 
     conn = amqp.Connection(host, userid=user_id, password=password, ssl=ssl)
+    print("Worker started")
     ch = conn.channel()
     ch.access_request('/data', active=True, read=True)
     #ch.exchange_declare('gitosis.post_update', 'fanout', auto_delete=False)

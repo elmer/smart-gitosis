@@ -9,6 +9,9 @@ import sys
 import shutil
 import ConfigParser
 
+import amqplib.client_0_8 as amqp
+import simplejson as json 
+
 from gitosis import repository
 from gitosis import ssh
 from gitosis import gitweb
@@ -30,9 +33,6 @@ def amqp_config(cfg):
 
 def send_amqp_message(host="localhost", user_id="guest", password="guest", ssl=True,
                       exchange="gitosis.post_update", data={}):
-    import amqplib.client_0_8 as amqp
-    import simplejson as json 
-
     m = json.dumps(data)
 
     log.info('Sending "%s" to: %s' % (m, exchange))
