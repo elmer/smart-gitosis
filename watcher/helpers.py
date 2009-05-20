@@ -4,6 +4,9 @@ from subprocess import Popen
 from hashlib import md5
 from uuid import uuid1
 
+def call(cmd):
+    return Popen(cmd)
+
 def uuid():
     """
     generates a uuid, removes "-"'s
