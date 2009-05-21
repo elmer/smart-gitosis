@@ -17,3 +17,5 @@
 /python-build-stamp-*
 *.swp
 *~
+*.pid
+*.log

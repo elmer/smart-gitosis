@@ -6,7 +6,9 @@ from twisted.python import log
 from txamqp.protocol import AMQClient
 from txamqp.client import TwistedDelegate
 
-from helpers import random_queue, process_config, update_or_create_repository
+from helpers import random_queue, process_config, update_or_create_repository, \
+                    CommandFailed
+
 from gitosis.util import read_config
 from socket import gethostname
 
@@ -16,15 +18,25 @@ import settings
 def callback_wrapper(projects_dir, git_user, git_server):
     def recv_callback(msg, chan, queue):
         log.msg("Received: %s" % msg.content.body)
+
         if msg.content.body == "status":
             log.msg("status: ok - %s" % gethostname())
+
         else:
-            data = json.loads(msg.content.body)
-            repository = data['repository']
-            update_or_create_repository(data['repository'],
-                                        projects_dir,
-                                        git_user,
-                                        git_server)
+            try:
+                data = json.loads(msg.content.body)
+                repository = data['repository']
+            except (ValueError, KeyError):
+                log.msg("Failed to decode json object")
+            else:
+                try:
+                    update_or_create_repository(data['repository'],
+                                                projects_dir,
+                                                git_user,
+                                                git_server)
+                except CommandFailed, e:
+                    log.msg("Failed to run command: \"%s\"" % e.value)
+
         return (queue.get().addCallback(recv_callback, chan, queue))
     return recv_callback
 

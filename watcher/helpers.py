@@ -4,8 +4,20 @@ from subprocess import Popen
 from hashlib import md5
 from uuid import uuid1
 
+class CommandFailed(Exception):
+    """Raised when a shell command fails"""
+    def __init__(self, value):
+         self.value = value
+
+    def __str__(self):
+         return repr(self.value)
+
+
 def call(cmd):
-    return Popen(cmd)
+    p = Popen(cmd, stdout=devnull)
+    if p.poll() != 0:
+        raise CommandFailed(" ".join(cmd))
+    return p
 
 def uuid():
     """
