@@ -2,6 +2,10 @@
 <!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
 <service_bundle type='manifest' name='smart/update_watcher'>
   <service name='application/smart/update_watcher' type='service' version='0'>
+
+    <create_default_instance enabled='true'/>
+    <single_instance />
+
     <dependency 
         name='fs' 
         grouping='require_all' 
@@ -34,6 +38,6 @@
         exec=':kill' 
         timeout_seconds='60'>
     </exec_method>
-    <single_instance />
+
   </service>
 </service_bundle>
