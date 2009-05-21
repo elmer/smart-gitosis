@@ -28,9 +28,11 @@
     <exec_method 
         name='start'
         type='method' 
-        exec='/opt/local/bin/twistd-2.5 -y watcher.tac'
+        exec='/opt/local/bin/twistd-2.5 -y /home/jill/src/gitosis-rsp/watcher/watcher.tac --logfile /home/jill/watcher.log'
         timeout_seconds='60'>
     </exec_method>
+    <!-- put watcher.tac in /opt/local/smart/share/ in the future -->
+    <!-- put the log in /opt/local/smart/log/ in the future -->
 
     <exec_method
         name='stop' 
