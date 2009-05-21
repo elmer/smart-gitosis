@@ -1,6 +1,6 @@
-from os import path, mkdir, devnull, chdir
+from os import path, mkdir, devnull, getcwd, chdir
 from subprocess import Popen
-
+from twisted.internet.utils import getProcessOutputAndValue
 from hashlib import md5
 from uuid import uuid1
 
@@ -12,11 +12,23 @@ class CommandFailed(Exception):
     def __str__(self):
          return repr(self.value)
 
+def cb(result):
+    stdout, stderr, exitcode = result;
+    if exicode != 0:
+        print("command executed and returned %d\n" % exitcode);
+        print("stdout was %s\n" % stdout);
+        print("stderr was %s\n" % stderr);
 
 def call(cmd):
-    p = Popen(cmd, stdout=devnull)
+    executable = cmd.pop(0);
+    output = getProcessOutputAndValue(executable, cmd);
+    output.addCallback( cb );
+
+def oldcall(cmd):
+    p = Popen(cmd, stdout=open(devnull, 'w'))
+    p.wait() 
     if p.poll() != 0:
-        raise CommandFailed(" ".join(cmd))
+        raise CommandFailed(" ".join(cmd) + " in directory "+getcwd())
     return p
 
 def uuid():
@@ -40,10 +52,10 @@ def update_or_create_repository(repository, projects_dir, git_user="git",
     
     if path.exists(project_path):
         chdir(project_path)
-        cmd = ["git", "pull"]
+        cmd = ["/opt/local/bin/git", "pull"]
     else:
         clone_uri = "%s@%s:%s" % (git_user, git_server, repository)
-        cmd = ["git", "clone", clone_uri, project_path]
+        cmd = ["/opt/local/bin/git", "clone", clone_uri, project_path]
     return call(cmd)
 
 def process_config(config):
