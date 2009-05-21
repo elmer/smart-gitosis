@@ -14,7 +14,7 @@ class CommandFailed(Exception):
 
 def cb(result):
     stdout, stderr, exitcode = result;
-    if exicode != 0:
+    if exitcode != 0:
         print("command executed and returned %d\n" % exitcode);
         print("stdout was %s\n" % stdout);
         print("stderr was %s\n" % stderr);
