@@ -27,32 +27,32 @@ roop@snoop
 class ReadKeys_Test(object):
     def test_empty(self):
         tmp = maketemp()
-        empty = os.path.join(tmp, 'empty')
+        empty = path.join(tmp, 'empty')
         mkdir(empty)
         gen = ssh.readKeys(keydir=empty)
         assert_raises(StopIteration, gen.next)
 
     def test_ignore_dot(self):
         tmp = maketemp()
-        keydir = os.path.join(tmp, 'ignore_dot')
+        keydir = path.join(tmp, 'ignore_dot')
         mkdir(keydir)
-        writeFile(os.path.join(keydir, '.jdoe.pub'), KEY_1+'\n')
+        writeFile(path.join(keydir, '.jdoe.pub'), KEY_1+'\n')
         gen = ssh.readKeys(keydir=keydir)
         assert_raises(StopIteration, gen.next)
 
     def test_ignore_nonpub(self):
         tmp = maketemp()
-        keydir = os.path.join(tmp, 'ignore_dot')
+        keydir = path.join(tmp, 'ignore_dot')
         mkdir(keydir)
-        writeFile(os.path.join(keydir, 'jdoe.xub'), KEY_1+'\n')
+        writeFile(path.join(keydir, 'jdoe.xub'), KEY_1+'\n')
         gen = ssh.readKeys(keydir=keydir)
         assert_raises(StopIteration, gen.next)
 
     def test_one(self):
         tmp = maketemp()
-        keydir = os.path.join(tmp, 'one')
+        keydir = path.join(tmp, 'one')
         mkdir(keydir)
-        writeFile(os.path.join(keydir, 'jdoe.pub'), KEY_1+'\n')
+        writeFile(path.join(keydir, 'jdoe.pub'), KEY_1+'\n')
 
         gen = ssh.readKeys(keydir=keydir)
         eq(gen.next(), ('jdoe', KEY_1))
@@ -60,10 +60,10 @@ class ReadKeys_Test(object):
 
     def test_two(self):
         tmp = maketemp()
-        keydir = os.path.join(tmp, 'two')
+        keydir = path.join(tmp, 'two')
         mkdir(keydir)
-        writeFile(os.path.join(keydir, 'jdoe.pub'), KEY_1+'\n')
-        writeFile(os.path.join(keydir, 'wsmith.pub'), KEY_2+'\n')
+        writeFile(path.join(keydir, 'jdoe.pub'), KEY_1+'\n')
+        writeFile(path.join(keydir, 'wsmith.pub'), KEY_2+'\n')
 
         gen = ssh.readKeys(keydir=keydir)
         got = frozenset(gen)
@@ -76,9 +76,9 @@ class ReadKeys_Test(object):
 
     def test_multiple_lines(self):
         tmp = maketemp()
-        keydir = os.path.join(tmp, 'keys')
+        keydir = path.join(tmp, 'keys')
         mkdir(keydir)
-        writeFile(os.path.join(keydir, 'jd"oe.pub'), KEY_1+'\n')
+        writeFile(path.join(keydir, 'jd"oe.pub'), KEY_1+'\n')
 
         gen = ssh.readKeys(keydir=keydir)
         got = frozenset(gen)
@@ -86,9 +86,9 @@ class ReadKeys_Test(object):
 
     def test_bad_filename(self):
         tmp = maketemp()
-        keydir = os.path.join(tmp, 'two')
+        keydir = path.join(tmp, 'two')
         mkdir(keydir)
-        writeFile(os.path.join(keydir, 'jdoe.pub'), KEY_1+'\n'+KEY_2+'\n')
+        writeFile(path.join(keydir, 'jdoe.pub'), KEY_1+'\n'+KEY_2+'\n')
 
         gen = ssh.readKeys(keydir=keydir)
         got = frozenset(gen)
@@ -184,7 +184,7 @@ no-X11-forwarding,no-agent-forwarding,no-pty %s
 baz
 ''' % KEY_2)
 
-        keydir = os.path.join(tmp, 'one')
+        keydir = path.join(tmp, 'one')
 
         mkdir(keydir)
 
@@ -194,7 +194,7 @@ baz
 
         ssh.writeAuthorizedKeys(authorized_keys, keydir)
 
-        got = readFile(path)
+        got = readFile(authorized_keys)
 
         eq(got, '''\
 # foo
