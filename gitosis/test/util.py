@@ -37,10 +37,8 @@ def maketemp():
     return tmp
 
 def writeFile(path, content):
-    tmp = '%s.tmp' % path
     with open(path, 'w') as f:
         f.write(content)
-    os.rename(tmp, path)
 
 def readFile(path):
     with open(path, 'r') as f:
