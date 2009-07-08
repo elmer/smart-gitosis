@@ -156,6 +156,8 @@ def test_bad_forbiddenCommand_write_readAccess_dash():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'readonly', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     e = assert_raises(
         serve.WriteAccessDenied,
         serve.serve,
@@ -172,6 +174,8 @@ def test_bad_forbiddenCommand_write_readAccess_space():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'readonly', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     e = assert_raises(
         serve.WriteAccessDenied,
         serve.serve,
@@ -192,6 +196,8 @@ def test_simple_read_dash():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'readonly', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     got = serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -208,6 +214,8 @@ def test_simple_read_space():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'readonly', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     got = serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -224,6 +232,8 @@ def test_simple_write_dash():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     got = serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -240,6 +250,8 @@ def test_simple_write_space():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     got = serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -262,6 +274,8 @@ def test_push_inits_if_needed():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -285,6 +299,8 @@ def test_push_inits_if_needed_haveExtension():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -306,6 +322,8 @@ def test_push_inits_subdir_parent_missing():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo/bar')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -333,6 +351,8 @@ def test_push_inits_subdir_parent_exists():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo/bar')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -354,6 +374,8 @@ def test_push_inits_if_needed_existsWithExtension():
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo')
     os.mkdir(os.path.join(repositories, 'foo.git'))
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -381,6 +403,8 @@ def test_push_inits_no_stdout_spam():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     old_stdout = os.dup(1)
     try:
         new_stdout = os.tmpfile()
@@ -415,6 +439,8 @@ def test_push_inits_sets_description():
     cfg.set('group foo', 'writable', 'foo')
     cfg.add_section('repo foo')
     cfg.set('repo foo', 'description', 'foodesc')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -441,6 +467,8 @@ def test_push_inits_updates_projects_list():
     cfg.set('group foo', 'writable', 'foo')
     cfg.add_section('repo foo')
     cfg.set('repo foo', 'gitweb', 'yes')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     os.mkdir(os.path.join(repositories, 'gitosis-admin.git'))
     serve.serve(
         cfg=cfg,
@@ -471,6 +499,8 @@ def test_push_inits_sets_export_ok():
     cfg.set('group foo', 'writable', 'foo')
     cfg.add_section('repo foo')
     cfg.set('repo foo', 'daemon', 'yes')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     serve.serve(
         cfg=cfg,
         user='jdoe',
@@ -494,6 +524,8 @@ def test_absolute():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'readonly', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'http://example.org')
     got = serve.serve(
         cfg=cfg,
         user='jdoe',
