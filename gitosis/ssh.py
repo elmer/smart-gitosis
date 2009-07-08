@@ -68,6 +68,6 @@ def writeAuthorizedKeys(path, keydir):
     authorized_keys = [line for line in generateAuthorizedKeys(keygen)]
 
     with open(path, 'w') as out_file:
-        out_file.writelines(filtered_keys)
+        out_file.write("\n".join(filtered_keys))
 
-        out_file.writelines(authorized_keys)
+        out_file.write("\n".join(authorized_keys))
