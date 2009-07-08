@@ -9,47 +9,25 @@ from gitosis.test.util import mkdir, maketemp, readFile, writeFile
 
 def test_projectsList_empty():
     cfg = RawConfigParser()
-    got = StringIO()
-    gitweb.generate_project_list_fp(
-        config=cfg,
-        fp=got)
-    eq(got.getvalue(), '''\
-''')
+    eq(gitweb.generate_project_list(cfg), [])
 
 def test_projectsList_repoDenied():
     cfg = RawConfigParser()
     cfg.add_section('repo foo/bar')
-    got = StringIO()
-    gitweb.generate_project_list_fp(
-        config=cfg,
-        fp=got)
-    eq(got.getvalue(), '''\
-''')
+    eq(gitweb.generate_project_list(cfg), [])
 
 def test_projectsList_noOwner():
     cfg = RawConfigParser()
     cfg.add_section('repo foo/bar')
     cfg.set('repo foo/bar', 'gitweb', 'yes')
-    got = StringIO()
-    gitweb.generate_project_list_fp(
-        config=cfg,
-        fp=got)
-    eq(got.getvalue(), '''\
-foo%2Fbar
-''')
+    eq(gitweb.generate_project_list(cfg), ['foo%2Fbar'])
 
 def test_projectsList_haveOwner():
     cfg = RawConfigParser()
     cfg.add_section('repo foo/bar')
     cfg.set('repo foo/bar', 'gitweb', 'yes')
     cfg.set('repo foo/bar', 'owner', 'John Doe')
-    got = StringIO()
-    gitweb.generate_project_list_fp(
-        config=cfg,
-        fp=got)
-    eq(got.getvalue(), '''\
-foo%2Fbar John+Doe
-''')
+    eq(gitweb.generate_project_list(cfg), ['foo%2Fbar John+Doe'])
 
 def test_projectsList_multiple():
     cfg = RawConfigParser()
@@ -59,14 +37,7 @@ def test_projectsList_multiple():
     cfg.set('repo foo/bar', 'gitweb', 'yes')
     cfg.add_section('repo quux')
     cfg.set('repo quux', 'gitweb', 'yes')
-    got = StringIO()
-    gitweb.generate_project_list_fp(
-        config=cfg,
-        fp=got)
-    eq(got.getvalue(), '''\
-quux
-foo%2Fbar John+Doe
-''')
+    eq(gitweb.generate_project_list(cfg), ['quux', 'foo%2Fbar John+Doe'])
 
 def test_projectsList_multiple_globalGitwebYes():
     cfg = RawConfigParser()
@@ -80,14 +51,7 @@ def test_projectsList_multiple_globalGitwebYes():
     cfg.add_section('repo thud')
     # this is still hidden
     cfg.set('repo thud', 'gitweb', 'no')
-    got = StringIO()
-    gitweb.generate_project_list_fp(
-        config=cfg,
-        fp=got)
-    eq(got.getvalue(), '''\
-quux
-foo%2Fbar John+Doe
-''')
+    eq(gitweb.generate_project_list(cfg), ['quux', 'foo%2Fbar John+Doe'])
 
 def test_projectsList_reallyEndsWithGit():
     tmp = maketemp()
@@ -98,13 +62,7 @@ def test_projectsList_reallyEndsWithGit():
     cfg.set('gitosis', 'repositories', tmp)
     cfg.add_section('repo foo')
     cfg.set('repo foo', 'gitweb', 'yes')
-    got = StringIO()
-    gitweb.generate_project_list_fp(
-        config=cfg,
-        fp=got)
-    eq(got.getvalue(), '''\
-foo.git
-''')
+    eq(gitweb.generate_project_list(cfg), ['foo.git'])
 
 def test_projectsList_path():
     tmp = maketemp()
@@ -116,13 +74,9 @@ def test_projectsList_path():
     cfg.add_section('repo foo')
     cfg.set('repo foo', 'gitweb', 'yes')
     projects_list = os.path.join(tmp, 'projects.list')
-    gitweb.generate_project_list(
-        config=cfg,
-        path=projects_list)
+    gitweb.write_project_list(cfg, projects_list)
     got = readFile(projects_list)
-    eq(got, '''\
-foo.git
-''')
+    eq(got, 'foo.git')
 
 def test_description_none():
     tmp = maketemp()

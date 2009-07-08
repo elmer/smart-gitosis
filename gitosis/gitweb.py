@@ -25,11 +25,22 @@ To plug this into ``gitweb``, you have two choices.
    isolates the changes a bit more nicely. Recommended.
 """
 
-import os, urllib, logging
+from __future__ import with_statement 
+import urllib, logging
+from os import path, getpid, rename
 
 from ConfigParser import NoSectionError, NoOptionError
 
 from gitosis import util
+
+class Repository(object):
+    def __init__(self, name, owner=None):
+        self.name = name
+        self.owner = owner
+
+    def __str__(self):
+        return "%s %s" % (self.name, self.owner)
+        
 
 def _escape_filename(s):
     s = s.replace('\\', '\\\\')
@@ -37,7 +48,37 @@ def _escape_filename(s):
     s = s.replace('"', '\\"')
     return s
 
-def generate_project_list_fp(config, fp):
+def get_repositories(config):
+    repositories = []
+
+    for section in config.sections():
+        header = section.split(None, 1)
+
+        if not header or header[0] != 'repo':
+            continue
+        
+        repositories.append(Repository(header[1:], owner=owner))
+    return repositories
+    
+
+def filter_repositories(repo_dir, config_repos):
+    """
+    This function takes a repository directory and a list of repositories
+    built from gitosis.conf and filters them based on the existence
+    of the repository in the directory
+    """
+    filtered_repos = []
+    for repo in config_repos:
+        if path.exists(path.join(repo_dir, repo.name)) or
+            path.exists(path.join(repo_dir, "%s.git" % repo.name)):
+            filtered_repos.append(repo)
+        else:
+            log.warning(
+                'Cannot find %(name)r in %(repo_dir)r'
+                % dict(name=repo.name, repo_dir=repo_dir))
+    return filtered_repos
+
+def generate_project_list(config):
     """
     Generate projects list for ``gitweb``.
 
@@ -49,20 +90,22 @@ def generate_project_list_fp(config, fp):
     """
     log = logging.getLogger('gitosis.gitweb.generate_projects_list')
 
-    repositories = util.getRepositoryDir(config)
+    repo_dir = util.getRepositoryDir(config)
 
     try:
         global_enable = config.getboolean('gitosis', 'gitweb')
     except (NoSectionError, NoOptionError):
         global_enable = False
 
-    for section in config.sections():
-        l = section.split(None, 1)
-        type_ = l.pop(0)
-        if type_ != 'repo':
-            continue
-        if not l:
-            continue
+    repositories = filter_repositories(repo_dir, get_repositories(config)))
+
+    out = []
+
+    for repo in repositories:
+        try:
+            enable = config.getboolean("repo " + repo.name, 'gitweb')
+        except (NoSectionError, NoOptionError):
+            enable = global_enable
 
         try:
             enable = config.getboolean(section, 'gitweb')
@@ -72,29 +115,10 @@ def generate_project_list_fp(config, fp):
         if not enable:
             continue
 
-        name, = l
+        out.append(urllib.quote_plus(str(repo)))
+    return out
 
-        if not os.path.exists(os.path.join(repositories, name)):
-            namedotgit = '%s.git' % name
-            if os.path.exists(os.path.join(repositories, namedotgit)):
-                name = namedotgit
-            else:
-                log.warning(
-                    'Cannot find %(name)r in %(repositories)r'
-                    % dict(name=name, repositories=repositories))
-
-        response = [name]
-        try:
-            owner = config.get(section, 'owner')
-        except (NoSectionError, NoOptionError):
-            pass
-        else:
-            response.append(owner)
-
-        line = ' '.join([urllib.quote_plus(s) for s in response])
-        print >>fp, line
-
-def generate_project_list(config, path):
+def write_project_list(config, path):
     """
     Generate projects list for ``gitweb``.
 
@@ -104,15 +128,11 @@ def generate_project_list(config, path):
     :param path: path to write projects list to
     :type path: str
     """
-    tmp = '%s.%d.tmp' % (path, os.getpid())
+    tmp = '%s.%d.tmp' % (path, getpid())
 
-    f = file(tmp, 'w')
-    try:
-        generate_project_list_fp(config=config, fp=f)
-    finally:
-        f.close()
-
-    os.rename(tmp, path)
+    with open(tmp, 'w') as f:
+        f.writelines(generate_project_list(config))
+    rename(tmp, path)
 
 
 def set_descriptions(config):
@@ -141,9 +161,9 @@ def set_descriptions(config):
 
         name, = l
 
-        if not os.path.exists(os.path.join(repositories, name)):
+        if not path.exists(path.join(repositories, name)):
             namedotgit = '%s.git' % name
-            if os.path.exists(os.path.join(repositories, namedotgit)):
+            if path.exists(path.join(repositories, namedotgit)):
                 name = namedotgit
             else:
                 log.warning(
@@ -151,15 +171,15 @@ def set_descriptions(config):
                     % dict(name=name, repositories=repositories))
                 continue
 
-        path = os.path.join(
+        path = path.join(
             repositories,
             name,
             'description',
             )
-        tmp = '%s.%d.tmp' % (path, os.getpid())
+        tmp = '%s.%d.tmp' % (path, getpid())
         f = file(tmp, 'w')
         try:
             print >>f, description
         finally:
             f.close()
-        os.rename(tmp, path)
+        rename(tmp, path)

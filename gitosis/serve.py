@@ -234,7 +234,7 @@ def serve(
             config=cfg,
             )
         generated = util.getGeneratedFilesDir(config=cfg)
-        gitweb.generate_project_list(
+        gitweb.write_project_list(
             config=cfg,
             path=os.path.join(generated, 'projects.list'),
             )
