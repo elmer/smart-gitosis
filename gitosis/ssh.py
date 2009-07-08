@@ -59,16 +59,15 @@ def filterAuthorizedKeys(fp):
         yield line
 
 def writeAuthorizedKeys(path, keydir):
+    filtered_keys = []
+
     with open(path, 'r') as in_file:
         filtered_keys = [line for line in filterAuthorizedKeys(in_file)]
 
-    tmp = '%s.%d.tmp' % (path, os.getpid())
+    keygen = readKeys(keydir)
+    authorized_keys = [line for line in generateAuthorizedKeys(keygen)]
 
-    with open(tmp, 'w') as out_file:
+    with open(path, 'w') as out_file:
         out_file.writelines(filtered_keys)
 
-        keygen = readKeys(keydir)
-        authorized_keys = [line for line in generateAuthorizedKeys(keygen)]
         out_file.writelines(authorized_keys)
-
-    os.rename(tmp, path)
