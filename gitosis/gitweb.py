@@ -65,7 +65,7 @@ def get_repositories(config):
         else:
             repo.owner = owner
 
-        repositories.append(repo
+        repositories.append(repo)
     return repositories
     
 
