@@ -1,5 +1,5 @@
-from nose.tools import eq_ as eq, assert_raises
 from __future__ import with_statement 
+from nose.tools import eq_ as eq, assert_raises
 
 import os
 from cStringIO import StringIO

@@ -24,7 +24,6 @@ To plug this into ``gitweb``, you have two choices.
    This way allows you have multiple separate uses of ``gitweb``, and
    isolates the changes a bit more nicely. Recommended.
 """
-
 from __future__ import with_statement 
 import urllib, logging
 from os import path, getpid, rename
