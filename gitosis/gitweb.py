@@ -65,7 +65,7 @@ def get_repositories(config):
         else:
             repo.owner = owner
 
-        repositories.append(repo)
+        repositories.append(repo
     return repositories
     
 
@@ -99,6 +99,7 @@ def generate_project_list(config):
     log = logging.getLogger('gitosis.gitweb.generate_projects_list')
 
     repo_dir = util.getRepositoryDir(config)
+    log.msg("RepoDir: %s" % repo_dir)
 
     try:
         global_enable = config.getboolean('gitosis', 'gitweb')
