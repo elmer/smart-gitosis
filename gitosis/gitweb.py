@@ -56,8 +56,16 @@ def get_repositories(config):
         if not header or header[0] != 'repo':
             continue
 
-        owner = config.get(section, 'owner')
-        repositories.append(Repository(header[1:], owner=owner))
+        repo = Repository(header[1:])
+
+        try:
+            owner = config.get(section, 'owner')
+        except (NoSectionError, NoOptionError):
+            pass
+        else:
+            repo.owner = owner
+
+        repositories.append(repo)
     return repositories
     
 
