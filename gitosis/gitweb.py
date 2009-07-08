@@ -69,8 +69,8 @@ def filter_repositories(repo_dir, config_repos):
     """
     filtered_repos = []
     for repo in config_repos:
-        if path.exists(path.join(repo_dir, repo.name)) or
-            path.exists(path.join(repo_dir, "%s.git" % repo.name)):
+        if path.exists(path.join(repo_dir, repo.name)) or \
+           path.exists(path.join(repo_dir, "%s.git" % repo.name)):
             filtered_repos.append(repo)
         else:
             log.warning(
@@ -97,7 +97,7 @@ def generate_project_list(config):
     except (NoSectionError, NoOptionError):
         global_enable = False
 
-    repositories = filter_repositories(repo_dir, get_repositories(config)))
+    repositories = filter_repositories(repo_dir, get_repositories(config))
 
     out = []
 
