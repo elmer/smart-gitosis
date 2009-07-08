@@ -542,6 +542,8 @@ def test_typo_writeable():
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writeable', 'foo')
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     log = logging.getLogger('gitosis.serve')
     buf = StringIO()
     handler = logging.StreamHandler(buf)
