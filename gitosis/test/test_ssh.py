@@ -2,6 +2,8 @@ from __future__ import with_statement
 from nose.tools import eq_ as eq, assert_raises
 
 import os
+from os import path
+
 from cStringIO import StringIO
 
 from gitosis import ssh
