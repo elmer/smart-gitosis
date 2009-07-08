@@ -1,3 +1,4 @@
+from __future__ import with_statement 
 from nose.tools import eq_ as eq
 
 import errno
@@ -37,20 +38,13 @@ def maketemp():
 
 def writeFile(path, content):
     tmp = '%s.tmp' % path
-    f = file(tmp, 'w')
-    try:
+    with open(path, 'w') as f:
         f.write(content)
-    finally:
-        f.close()
     os.rename(tmp, path)
 
 def readFile(path):
-    f = file(path)
-    try:
-        data = f.read()
-    finally:
-        f.close()
-    return data
+    with open(path, 'r') as f:
+        return f.read()
 
 def assert_raises(excClass, callableObj, *args, **kwargs):
     """

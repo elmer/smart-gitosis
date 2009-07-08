@@ -1,4 +1,5 @@
 from nose.tools import eq_ as eq, assert_raises
+from __future__ import with_statement 
 
 import os
 from cStringIO import StringIO
@@ -170,9 +171,9 @@ g,no-agent-forwarding,no-pty %(key_1)s
 class WriteAuthorizedKeys_Test(object):
     def test_simple(self):
         tmp = maketemp()
+        
         path = os.path.join(tmp, 'authorized_keys')
-        f = file(path, 'w')
-        try:
+        with open(path, 'w') as f:
             f.write('''\
 # foo
 bar
@@ -180,9 +181,8 @@ bar
 command="/foo/bar/baz/gitosis-serve wsmith",no-port-forwarding,\
 no-X11-forwarding,no-agent-forwarding,no-pty %(key_2)s
 baz
-''' % dict(key_2=KEY_2))
-        finally:
-            f.close()
+''' % KEY_2)
+
         keydir = os.path.join(tmp, 'one')
         mkdir(keydir)
         writeFile(os.path.join(keydir, 'jdoe.pub'), KEY_1+'\n')
