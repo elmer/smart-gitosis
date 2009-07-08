@@ -99,7 +99,6 @@ def generate_project_list(config):
     log = logging.getLogger('gitosis.gitweb.generate_projects_list')
 
     repo_dir = util.getRepositoryDir(config)
-    log.warning("RepoDir: %s" % repo_dir)
 
     try:
         global_enable = config.getboolean('gitosis', 'gitweb')
@@ -117,7 +116,7 @@ def generate_project_list(config):
             enable = global_enable
 
         try:
-            enable = config.getboolean(section, 'gitweb')
+            enable = config.getboolean("repo " + repo.name, 'gitweb')
         except (NoSectionError, NoOptionError):
             enable = global_enable
 
