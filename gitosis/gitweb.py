@@ -165,6 +165,7 @@ def set_descriptions(config):
             continue
 
         name, = l
+        log.debug("Name: %s" % name)
 
         if not path.exists(path.join(repositories, name)):
             namedotgit = '%s.git' % name
@@ -176,15 +177,7 @@ def set_descriptions(config):
                     % dict(name=name, repositories=repositories))
                 continue
 
-        path = path.join(
-            repositories,
-            name,
-            'description',
-            )
-        tmp = '%s.%d.tmp' % (path, getpid())
-        f = file(tmp, 'w')
-        try:
-            print >>f, description
-        finally:
-            f.close()
-        rename(tmp, path)
+        path = path.join(repositories, name, 'description')
+
+        with open(path, 'w') as f
+            f.write(description)
