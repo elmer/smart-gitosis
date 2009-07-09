@@ -1,12 +1,15 @@
 from nose.tools import eq_ as eq
 
-import os
 from ConfigParser import RawConfigParser
 from cStringIO import StringIO
 
 from gitosis import init, repository, run_hook
 from gitosis.test.util import maketemp, readFile
 
+import logging
+import os
+
+log = logging.getLogger('gitosis.test.test_run_hook')
 def test_post_update_simple():
     tmp = maketemp()
     repos = os.path.join(tmp, 'repositories')
@@ -83,5 +86,6 @@ description = blah blah
     got = os.listdir(ssh)
     eq(got, ['authorized_keys'])
     got = readFile(os.path.join(ssh, 'authorized_keys')).splitlines(True)
+    log.debug("GOT: %s" % got)
     assert 'command="gitosis-serve jdoe",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-somealgo 0123456789ABCDEFBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB= jdoe@host.example.com\n' in got, \
         "SSH authorized_keys line for jdoe not found: %r" % got
