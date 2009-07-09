@@ -499,7 +499,7 @@ def test_push_inits_updates_projects_list():
 
     assert path.exists(project_list)
 
-    eq(util.readFile(project_list), 'foo.git\n')
+    eq(util.readFile(project_list), 'foo.git')
 
 def test_push_inits_sets_export_ok():
     tmp = util.maketemp()
