@@ -14,6 +14,8 @@ from gitosis.test import util
 
 def test_bad_newLine():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.CommandMayNotContainNewlineError,
         serve.serve,
@@ -26,6 +28,8 @@ def test_bad_newLine():
 
 def test_bad_dash_noargs():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.UnknownCommandError,
         serve.serve,
@@ -38,6 +42,8 @@ def test_bad_dash_noargs():
 
 def test_bad_space_noargs():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.UnknownCommandError,
         serve.serve,
@@ -50,6 +56,8 @@ def test_bad_space_noargs():
 
 def test_bad_command():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.UnknownCommandError,
         serve.serve,
@@ -62,6 +70,8 @@ def test_bad_command():
 
 def test_bad_unsafeArguments_notQuoted():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.UnsafeArgumentsError,
         serve.serve,
@@ -74,6 +84,8 @@ def test_bad_unsafeArguments_notQuoted():
 
 def test_bad_unsafeArguments_badCharacters():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.UnsafeArgumentsError,
         serve.serve,
@@ -86,6 +98,8 @@ def test_bad_unsafeArguments_badCharacters():
 
 def test_bad_unsafeArguments_dotdot():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.UnsafeArgumentsError,
         serve.serve,
@@ -98,6 +112,8 @@ def test_bad_unsafeArguments_dotdot():
 
 def test_bad_forbiddenCommand_read_dash():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.ReadAccessDenied,
         serve.serve,
@@ -111,6 +127,8 @@ def test_bad_forbiddenCommand_read_dash():
 
 def test_bad_forbiddenCommand_read_space():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.ReadAccessDenied,
         serve.serve,
@@ -141,6 +159,8 @@ def test_bad_forbiddenCommand_write_noAccess_dash():
 
 def test_bad_forbiddenCommand_write_noAccess_space():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.ReadAccessDenied,
         serve.serve,
