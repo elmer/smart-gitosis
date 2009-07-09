@@ -138,7 +138,7 @@ def generate_project_list(config):
     log.debug("Out: %s" % out)
     return out
 
-def write_project_list(config, path):
+def write_project_list(config, to):
     """
     Generate projects list for ``gitweb``.
 
@@ -148,7 +148,7 @@ def write_project_list(config, path):
     :param path: path to write projects list to
     :type path: str
     """
-    with open(path, 'w') as f:
+    with open(to, 'w') as f:
         f.write("\n".join(generate_project_list(config)))
 
 
@@ -189,7 +189,7 @@ def set_descriptions(config):
                     % dict(name=name, repositories=repositories))
                 continue
 
-        path = path.join(repositories, name, 'description')
+        p = path.join(repositories, name, 'description')
 
-        with open(path, 'w') as f:
+        with open(p, 'w') as f:
             f.write(description)
