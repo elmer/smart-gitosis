@@ -20,21 +20,15 @@ def haveAccess(config, user, mode, path):
 
     log.debug(
         'Access check for %(user)r as %(mode)r on %(path)r...'
-        % dict(
-        user=user,
-        mode=mode,
-        path=path,
-        ))
+        % dict(user=user, mode=mode, path=path))
 
 
     basename, ext = os.path.splitext(path)
     if ext == '.git':
         log.debug(
             'Stripping .git suffix from %(path)r, new value %(basename)r'
-            % dict(
-            path=path,
-            basename=basename,
-            ))
+            % dict( path=path, basename=basename,))
+
         path = basename
 
     response = check_with_rsp(config, user, mode, path)
@@ -54,11 +48,7 @@ def haveAccess(config, user, mode, path):
         if path in repos:
             log.debug(
                 'Access ok for %(user)r as %(mode)r on %(path)r'
-                % dict(
-                user=user,
-                mode=mode,
-                path=path,
-                ))
+                % dict( user=user, mode=mode, path=path,))
             mapping = path
         else:
             try:
@@ -69,12 +59,7 @@ def haveAccess(config, user, mode, path):
             else:
                 log.debug(
                     'Access ok for %(user)r as %(mode)r on %(path)r=%(mapping)r'
-                    % dict(
-                    user=user,
-                    mode=mode,
-                    path=path,
-                    mapping=mapping,
-                    ))
+                    % dict( user=user, mode=mode, path=path, mapping=mapping,))
 
         if mapping is not None:
             prefix = None
@@ -89,10 +74,7 @@ def haveAccess(config, user, mode, path):
 
             log.debug(
                 'Using prefix %(prefix)r for %(path)r'
-                % dict(
-                prefix=prefix,
-                path=mapping,
-                ))
+                % dict( prefix=prefix, path=mapping,))
             return (prefix, mapping)
 
 def check_with_rsp(config, user, mode, path):

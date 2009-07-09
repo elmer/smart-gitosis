@@ -140,11 +140,7 @@ def should_send_message( cfg, user, command ):
         return False
 
 
-def serve(
-    cfg,
-    user,
-    command,
-    ):
+def serve(cfg, user, command):
     if '\n' in command:
         raise CommandMayNotContainNewlineError()
 
@@ -230,9 +226,7 @@ def serve(
             util.mkdir(p, 0750)
 
         repository.init(path=fullpath)
-        gitweb.set_descriptions(
-            config=cfg,
-            )
+        gitweb.set_descriptions(config=cfg)
         generated = util.getGeneratedFilesDir(config=cfg)
         gitweb.write_project_list(
             config=cfg,

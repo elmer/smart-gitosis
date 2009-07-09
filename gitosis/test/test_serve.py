@@ -3,6 +3,7 @@ from gitosis.test.util import assert_raises
 
 import logging
 import os
+from os import path
 from cStringIO import StringIO
 from ConfigParser import RawConfigParser
 
@@ -189,7 +190,7 @@ def test_bad_forbiddenCommand_write_readAccess_space():
 
 def test_simple_read_dash():
     tmp = util.maketemp()
-    repository.init(os.path.join(tmp, 'foo.git'))
+    repository.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)
@@ -207,7 +208,7 @@ def test_simple_read_dash():
 
 def test_simple_read_space():
     tmp = util.maketemp()
-    repository.init(os.path.join(tmp, 'foo.git'))
+    repository.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)
@@ -225,7 +226,7 @@ def test_simple_read_space():
 
 def test_simple_write_dash():
     tmp = util.maketemp()
-    repository.init(os.path.join(tmp, 'foo.git'))
+    repository.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)
@@ -243,7 +244,7 @@ def test_simple_write_dash():
 
 def test_simple_write_space():
     tmp = util.maketemp()
-    repository.init(os.path.join(tmp, 'foo.git'))
+    repository.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)
@@ -263,26 +264,31 @@ def test_push_inits_if_needed():
     # a push to a non-existent repository (but where config authorizes
     # you to do that) will create the repository on the fly
     tmp = util.maketemp()
+
+    repositories = path.join(tmp, 'repositories')
+    os.mkdir(repositories)
+
+    generated = path.join(tmp, 'generated')
+    os.mkdir(generated)
+
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
-    repositories = os.path.join(tmp, 'repositories')
-    os.mkdir(repositories)
     cfg.set('gitosis', 'repositories', repositories)
-    generated = os.path.join(tmp, 'generated')
-    os.mkdir(generated)
     cfg.set('gitosis', 'generate-files-in', generated)
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo')
     cfg.add_section('rsp')
     cfg.set('rsp', 'haveAccessURL', 'example.org')
+
     serve.serve(
         cfg=cfg,
         user='jdoe',
         command="git-receive-pack 'foo'",
         )
+
     eq(os.listdir(repositories), ['foo.git'])
-    assert os.path.isfile(os.path.join(repositories, 'foo.git', 'HEAD'))
+    assert path.isfile(path.join(repositories, 'foo.git', 'HEAD'))
 
 def test_push_inits_if_needed_haveExtension():
     # a push to a non-existent repository (but where config authorizes
@@ -290,10 +296,10 @@ def test_push_inits_if_needed_haveExtension():
     tmp = util.maketemp()
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
-    repositories = os.path.join(tmp, 'repositories')
+    repositories = path.join(tmp, 'repositories')
     os.mkdir(repositories)
     cfg.set('gitosis', 'repositories', repositories)
-    generated = os.path.join(tmp, 'generated')
+    generated = path.join(tmp, 'generated')
     os.mkdir(generated)
     cfg.set('gitosis', 'generate-files-in', generated)
     cfg.add_section('group foo')
@@ -307,16 +313,16 @@ def test_push_inits_if_needed_haveExtension():
         command="git-receive-pack 'foo.git'",
         )
     eq(os.listdir(repositories), ['foo.git'])
-    assert os.path.isfile(os.path.join(repositories, 'foo.git', 'HEAD'))
+    assert path.isfile(path.join(repositories, 'foo.git', 'HEAD'))
 
 def test_push_inits_subdir_parent_missing():
     tmp = util.maketemp()
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
-    repositories = os.path.join(tmp, 'repositories')
+    repositories = path.join(tmp, 'repositories')
     os.mkdir(repositories)
     cfg.set('gitosis', 'repositories', repositories)
-    generated = os.path.join(tmp, 'generated')
+    generated = path.join(tmp, 'generated')
     os.mkdir(generated)
     cfg.set('gitosis', 'generate-files-in', generated)
     cfg.add_section('group foo')
@@ -330,22 +336,22 @@ def test_push_inits_subdir_parent_missing():
         command="git-receive-pack 'foo/bar.git'",
         )
     eq(os.listdir(repositories), ['foo'])
-    foo = os.path.join(repositories, 'foo')
+    foo = path.join(repositories, 'foo')
     util.check_mode(foo, 0750, is_dir=True)
     eq(os.listdir(foo), ['bar.git'])
-    assert os.path.isfile(os.path.join(repositories, 'foo', 'bar.git', 'HEAD'))
+    assert path.isfile(path.join(repositories, 'foo', 'bar.git', 'HEAD'))
 
 def test_push_inits_subdir_parent_exists():
     tmp = util.maketemp()
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
-    repositories = os.path.join(tmp, 'repositories')
+    repositories = path.join(tmp, 'repositories')
     os.mkdir(repositories)
-    foo = os.path.join(repositories, 'foo')
+    foo = path.join(repositories, 'foo')
     # silly mode on purpose; not to be touched
     os.mkdir(foo, 0751)
     cfg.set('gitosis', 'repositories', repositories)
-    generated = os.path.join(tmp, 'generated')
+    generated = path.join(tmp, 'generated')
     os.mkdir(generated)
     cfg.set('gitosis', 'generate-files-in', generated)
     cfg.add_section('group foo')
@@ -361,19 +367,19 @@ def test_push_inits_subdir_parent_exists():
     eq(os.listdir(repositories), ['foo'])
     util.check_mode(foo, 0751, is_dir=True)
     eq(os.listdir(foo), ['bar.git'])
-    assert os.path.isfile(os.path.join(repositories, 'foo', 'bar.git', 'HEAD'))
+    assert path.isfile(path.join(repositories, 'foo', 'bar.git', 'HEAD'))
 
 def test_push_inits_if_needed_existsWithExtension():
     tmp = util.maketemp()
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
-    repositories = os.path.join(tmp, 'repositories')
+    repositories = path.join(tmp, 'repositories')
     os.mkdir(repositories)
     cfg.set('gitosis', 'repositories', repositories)
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo')
-    os.mkdir(os.path.join(repositories, 'foo.git'))
+    os.mkdir(path.join(repositories, 'foo.git'))
     cfg.add_section('rsp')
     cfg.set('rsp', 'haveAccessURL', 'example.org')
     serve.serve(
@@ -386,7 +392,7 @@ def test_push_inits_if_needed_existsWithExtension():
     # create it properly, and the mock repo didn't have anything in
     # it.. having HEAD implies serve ran git init, which is supposed
     # to be unnecessary here
-    eq(os.listdir(os.path.join(repositories, 'foo.git')), [])
+    eq(os.listdir(path.join(repositories, 'foo.git')), [])
 
 def test_push_inits_no_stdout_spam():
     # git init has a tendency to spew to stdout, and that confuses
@@ -394,10 +400,10 @@ def test_push_inits_no_stdout_spam():
     tmp = util.maketemp()
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
-    repositories = os.path.join(tmp, 'repositories')
+    repositories = path.join(tmp, 'repositories')
     os.mkdir(repositories)
     cfg.set('gitosis', 'repositories', repositories)
-    generated = os.path.join(tmp, 'generated')
+    generated = path.join(tmp, 'generated')
     os.mkdir(generated)
     cfg.set('gitosis', 'generate-files-in', generated)
     cfg.add_section('group foo')
@@ -422,16 +428,16 @@ def test_push_inits_no_stdout_spam():
     new_stdout.close()
     eq(got, '')
     eq(os.listdir(repositories), ['foo.git'])
-    assert os.path.isfile(os.path.join(repositories, 'foo.git', 'HEAD'))
+    assert path.isfile(path.join(repositories, 'foo.git', 'HEAD'))
 
 def test_push_inits_sets_description():
     tmp = util.maketemp()
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
-    repositories = os.path.join(tmp, 'repositories')
+    repositories = path.join(tmp, 'repositories')
     os.mkdir(repositories)
     cfg.set('gitosis', 'repositories', repositories)
-    generated = os.path.join(tmp, 'generated')
+    generated = path.join(tmp, 'generated')
     os.mkdir(generated)
     cfg.set('gitosis', 'generate-files-in', generated)
     cfg.add_section('group foo')
@@ -447,51 +453,62 @@ def test_push_inits_sets_description():
         command="git-receive-pack 'foo'",
         )
     eq(os.listdir(repositories), ['foo.git'])
-    path = os.path.join(repositories, 'foo.git', 'description')
-    assert os.path.exists(path)
-    got = util.readFile(path)
+    description = path.join(repositories, 'foo.git', 'description')
+    assert path.exists(description)
+    got = util.readFile(description)
     eq(got, 'foodesc\n')
 
 def test_push_inits_updates_projects_list():
     tmp = util.maketemp()
+
+    repositories = path.join(tmp, 'repositories')
+    os.mkdir(repositories)
+
+    generated = path.join(tmp, 'generated')
+    os.mkdir(generated)
+
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
-    repositories = os.path.join(tmp, 'repositories')
-    os.mkdir(repositories)
     cfg.set('gitosis', 'repositories', repositories)
-    generated = os.path.join(tmp, 'generated')
-    os.mkdir(generated)
     cfg.set('gitosis', 'generate-files-in', generated)
+
     cfg.add_section('group foo')
     cfg.set('group foo', 'members', 'jdoe')
     cfg.set('group foo', 'writable', 'foo')
+
     cfg.add_section('repo foo')
     cfg.set('repo foo', 'gitweb', 'yes')
+
     cfg.add_section('rsp')
     cfg.set('rsp', 'haveAccessURL', 'example.org')
-    os.mkdir(os.path.join(repositories, 'gitosis-admin.git'))
+
+    os.mkdir(path.join(repositories, 'gitosis-admin.git'))
+
     serve.serve(
         cfg=cfg,
         user='jdoe',
         command="git-receive-pack 'foo'",
         )
+
     eq(
         sorted(os.listdir(repositories)),
         sorted(['foo.git', 'gitosis-admin.git']),
         )
-    path = os.path.join(generated, 'projects.list')
-    assert os.path.exists(path)
-    got = util.readFile(path)
-    eq(got, 'foo.git\n')
+
+    project_list = path.join(generated, 'projects.list')
+
+    assert path.exists(project_list)
+
+    eq(util.readFile(project_list), 'foo.git\n')
 
 def test_push_inits_sets_export_ok():
     tmp = util.maketemp()
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
-    repositories = os.path.join(tmp, 'repositories')
+    repositories = path.join(tmp, 'repositories')
     os.mkdir(repositories)
     cfg.set('gitosis', 'repositories', repositories)
-    generated = os.path.join(tmp, 'generated')
+    generated = path.join(tmp, 'generated')
     os.mkdir(generated)
     cfg.set('gitosis', 'generate-files-in', generated)
     cfg.add_section('group foo')
@@ -507,8 +524,8 @@ def test_push_inits_sets_export_ok():
         command="git-receive-pack 'foo'",
         )
     eq(os.listdir(repositories), ['foo.git'])
-    path = os.path.join(repositories, 'foo.git', 'git-daemon-export-ok')
-    assert os.path.exists(path)
+    export = path.join(repositories, 'foo.git', 'git-daemon-export-ok')
+    assert path.exists(export)
 
 def test_absolute():
     # as the only convenient way to use non-standard SSH ports with
@@ -517,7 +534,7 @@ def test_absolute():
     # relative paths; you'll never really want absolute paths via
     # gitosis, anyway.
     tmp = util.maketemp()
-    repository.init(os.path.join(tmp, 'foo.git'))
+    repository.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)
@@ -535,7 +552,7 @@ def test_absolute():
 
 def test_typo_writeable():
     tmp = util.maketemp()
-    repository.init(os.path.join(tmp, 'foo.git'))
+    repository.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)

@@ -136,11 +136,8 @@ def write_project_list(config, path):
     :param path: path to write projects list to
     :type path: str
     """
-    tmp = '%s.%d.tmp' % (path, getpid())
-
-    with open(tmp, 'w') as f:
-        f.writelines(generate_project_list(config))
-    rename(tmp, path)
+    with open(path, 'w') as f:
+        f.write("\n".join(generate_project_list(config)))
 
 
 def set_descriptions(config):
