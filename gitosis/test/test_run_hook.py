@@ -85,6 +85,6 @@ description = blah blah
         "git-daemon-export-ok not created: %r" % got
     got = os.listdir(ssh)
     eq(got, ['authorized_keys'])
-    got = readFile(os.path.join(ssh, 'authorized_keys')).splitlines(True)
-    assert 'command="PATH=/opt/local/bin gitosis-serve jdoe",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-somealgo 0123456789ABCDEFBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB= jdoe@host.example.com\n' in got, \
+    got = readFile(os.path.join(ssh, 'authorized_keys')).splitlines()
+    assert 'command="PATH=/opt/local/bin gitosis-serve jdoe",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-somealgo 0123456789ABCDEFBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB= jdoe@host.example.com' in got, \
         "SSH authorized_keys line for jdoe not found: %r" % got
