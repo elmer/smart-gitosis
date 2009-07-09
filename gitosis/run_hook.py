@@ -42,13 +42,9 @@ def post_update(cfg, git_dir):
         config=cfg,
         )
     generated = util.getGeneratedFilesDir(config=cfg)
-    gitweb.write_project_list(
-        config=cfg,
-        path=os.path.join(generated, 'projects.list'),
-        )
-    gitdaemon.set_export_ok(
-        config=cfg,
-        )
+    gitweb.write_project_list(cfg,
+        os.path.join(generated, 'projects.list'))
+    gitdaemon.set_export_ok(cfg)
     authorized_keys = util.getSSHAuthorizedKeysPath(config=cfg)
     ssh.writeAuthorizedKeys(
         path=authorized_keys,
