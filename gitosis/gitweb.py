@@ -90,6 +90,7 @@ def filter_repositories(repo_dir, config_repos):
                 'Cannot find %(name)r in %(repo_dir)r'
                 % dict(name=repo.name, repo_dir=repo_dir))
 
+    log.debug("Filtered Repos: %s" % filtered_repos)
     return filtered_repos
 
 def generate_project_list(config):
