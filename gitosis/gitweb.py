@@ -97,6 +97,7 @@ def generate_project_list(config):
     :type fp: (file-like, anything with ``.write(data)``)
     """
     log = logging.getLogger('gitosis.gitweb.generate_projects_list')
+    log.debug("WTF")
 
     repo_dir = util.getRepositoryDir(config)
 
