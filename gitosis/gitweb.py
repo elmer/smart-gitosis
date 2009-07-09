@@ -78,6 +78,7 @@ def filter_repositories(repo_dir, config_repos):
     built from gitosis.conf and filters them based on the existence
     of the repository in the directory
     """
+    log = logging.getLogger('gitosis.gitweb.filter_repositories')
     filtered_repos = []
     for repo in config_repos:
         if path.exists(path.join(repo_dir, repo.name)):
