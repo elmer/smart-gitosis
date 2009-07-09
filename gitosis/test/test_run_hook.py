@@ -70,10 +70,7 @@ description = blah blah
         'ssh-authorized-keys-path',
         os.path.join(ssh, 'authorized_keys'),
         )
-    run_hook.post_update(
-        cfg=cfg,
-        git_dir=admin_repository,
-        )
+    run_hook.post_update(cfg, admin_repository)
     got = readFile(os.path.join(repos, 'forweb.git', 'description'))
     eq(got, 'blah blah\n')
     got = os.listdir(generated)

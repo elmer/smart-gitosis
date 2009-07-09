@@ -1,5 +1,6 @@
 from __future__ import with_statement 
 import os, errno, re
+from os import path
 import logging
 
 log = logging.getLogger('gitosis.ssh')
@@ -15,7 +16,7 @@ def readKeys(keydir):
     Read SSH public keys from ``keydir/*.pub``
     """
     for filename in os.listdir(keydir):
-        basename, ext = os.path.splitext(filename)
+        basename, ext = path.splitext(filename)
 
         if filename.startswith('.') or ext != '.pub':
             continue
@@ -24,8 +25,8 @@ def readKeys(keydir):
             log.warn('Unsafe SSH username in keyfile: %r', filename)
             continue
 
-        path = os.path.join(keydir, filename)
-        with open(path) as f:
+        file_path = path.join(keydir, filename)
+        with open(file_path) as f:
             for line in f:
                 line = line.rstrip('\n')
                 yield (basename, line)
@@ -58,16 +59,16 @@ def filterAuthorizedKeys(fp):
             continue
         yield line
 
-def writeAuthorizedKeys(path, keydir):
+def writeAuthorizedKeys(file_path, keydir):
     filtered_keys = []
 
-    with open(path, 'r') as in_file:
-        filtered_keys = [line for line in filterAuthorizedKeys(in_file)]
+    if path.exists(file_path):
+        with open(file_path, 'r') as in_file:
+            filtered_keys = [line for line in filterAuthorizedKeys(in_file)]
 
     keygen = readKeys(keydir)
     authorized_keys = [line for line in generateAuthorizedKeys(keygen)]
 
-    with open(path, 'w') as out_file:
+    with open(file_path, 'w') as out_file:
         out_file.write("\n".join(filtered_keys) + "\n")
-
         out_file.write("\n".join(authorized_keys))
