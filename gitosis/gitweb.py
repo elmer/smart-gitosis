@@ -33,9 +33,10 @@ from ConfigParser import NoSectionError, NoOptionError
 from gitosis import util
 
 class Repository(object):
-    def __init__(self, name, owner=None):
+    def __init__(self, name="", section="", owner=None):
         self.name = name
         self.owner = owner
+        self.section=section
 
     def __str__(self):
         if self.owner:
@@ -62,7 +63,7 @@ def get_repositories(config):
         if not header or header[0] != 'repo':
             continue
 
-        repo = Repository(" ".join(header[1:]))
+        repo = Repository(name=name, section=section)
 
         try:
             owner = config.get(section, 'owner')
@@ -123,12 +124,12 @@ def generate_project_list(config):
 
     for repo in repositories:
         try:
-            enable = config.getboolean("repo " + repo.name, 'gitweb')
+            enable = config.getboolean(repo.section, 'gitweb')
         except (NoSectionError, NoOptionError):
             enable = global_enable
 
         try:
-            enable = config.getboolean("repo " + repo.name, 'gitweb')
+            enable = config.getboolean(repo.section, 'gitweb')
         except (NoSectionError, NoOptionError):
             enable = global_enable
 
