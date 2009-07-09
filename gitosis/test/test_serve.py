@@ -124,6 +124,8 @@ def test_bad_forbiddenCommand_read_space():
 
 def test_bad_forbiddenCommand_write_noAccess_dash():
     cfg = RawConfigParser()
+    cfg.add_section('rsp')
+    cfg.set('rsp', 'haveAccessURL', 'example.org')
     e = assert_raises(
         serve.ReadAccessDenied,
         serve.serve,
@@ -456,7 +458,7 @@ def test_push_inits_sets_description():
     description = path.join(repositories, 'foo.git', 'description')
     assert path.exists(description)
     got = util.readFile(description)
-    eq(got, 'foodesc\n')
+    eq(got, 'foodesc')
 
 def test_push_inits_updates_projects_list():
     tmp = util.maketemp()
