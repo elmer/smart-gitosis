@@ -38,14 +38,17 @@ class Repository(object):
         self.owner = owner
         self.section=section
 
-    def __str__(self):
+    def details(self):
         if self.owner:
-            return "%s %s" % (self.name, self.owner)
+            return [self.name, self.owner]
         else:
-            return self.name
+            return [self.name]
+
+    def __str__(self):
+        return self.__repr__()
 
     def __repr__(self):
-        return self.__str__()
+        return " ".join(self.details())
         
 
 def _escape_filename(s):
@@ -131,8 +134,8 @@ def generate_project_list(config):
 
         if not enable:
             continue
-
-        out.append(urllib.quote_plus("%s %s" % (repo.name, repo.owner)))
+        s = [urllib.quote_plus(x) for x in repo.details()]
+        out.append(" ".join(s))
     return out
 
 def write_project_list(config, to):
