@@ -80,7 +80,7 @@ def filter_repositories(repo_dir, config_repos):
     """
     filtered_repos = []
     for repo in config_repos:
-        if not path.exist(path.join(repo_dir, repo.name)):
+        if not path.exists(path.join(repo_dir, repo.name)):
             repo.name = "%s.git" % repo.name
             if not path.exists(path.join(repo_dir, repo.name)):
                 log.warning(
