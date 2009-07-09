@@ -125,6 +125,7 @@ def generate_project_list(config):
             continue
 
         out.append(urllib.quote_plus(str(repo)))
+    log.debug("Out: %s" % out)
     return out
 
 def write_project_list(config, path):
