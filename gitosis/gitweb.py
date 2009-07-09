@@ -38,7 +38,10 @@ class Repository(object):
         self.owner = owner
 
     def __str__(self):
-        return "%s %s" % (self.name, self.owner)
+        if self.owner:
+            return "%s %s" % (self.name, self.owner)
+        else:
+            return self.name
         
 
 def _escape_filename(s):
