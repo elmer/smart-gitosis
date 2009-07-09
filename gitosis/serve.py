@@ -228,13 +228,10 @@ def serve(cfg, user, command):
         repository.init(path=fullpath)
         gitweb.set_descriptions(config=cfg)
         generated = util.getGeneratedFilesDir(config=cfg)
-        gitweb.write_project_list(
-            config=cfg,
-            path=os.path.join(generated, 'projects.list'),
+        gitweb.write_project_list(cfg,
+            os.path.join(generated, 'projects.list')
             )
-        gitdaemon.set_export_ok(
-            config=cfg,
-            )
+        gitdaemon.set_export_ok(cfg)
 
     # put the verb back together with the new path
     newcmd = "%(verb)s '%(path)s'" % dict(
