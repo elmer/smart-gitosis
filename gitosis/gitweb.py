@@ -179,5 +179,5 @@ def set_descriptions(config):
 
         path = path.join(repositories, name, 'description')
 
-        with open(path, 'w') as f
+        with open(path, 'w') as f:
             f.write(description)
