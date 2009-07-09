@@ -3,8 +3,11 @@ import os
 import re
 import subprocess
 import sys
+import logging
 
 from gitosis import util
+
+log = logging.getLogger('gitosis.repository')
 
 class GitError(Exception):
     """git failed"""
@@ -15,11 +18,7 @@ class GitError(Exception):
 class GitInitError(Exception):
     """git init failed"""
 
-def init(
-    path,
-    template=None,
-    _git=None,
-    ):
+def init(path, template=None, _git=None):
     """
     Create a git repository at C{path} (if missing).
 
@@ -58,13 +57,7 @@ class GitFastImportError(GitError):
     """git fast-import failed"""
     pass
 
-def fast_import(
-    git_dir,
-    commit_msg,
-    committer,
-    files,
-    parent=None,
-    ):
+def fast_import(git_dir, commit_msg, committer, files, parent=None):
     """
     Create an initial commit.
     """
@@ -185,6 +178,7 @@ def has_initial_commit(git_dir):
         close_fds=True,
         )
     got = child.stdout.read()
+    log.debug("Has Initial Commit GOT: %s" % got)
     returncode = child.wait()
     if returncode != 0:
         raise GitRevParseError('exit status %d' % returncode)
