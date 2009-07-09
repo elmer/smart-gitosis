@@ -76,12 +76,7 @@ description = blah blah
     got = os.listdir(generated)
     eq(got, ['projects.list'])
     got = readFile(os.path.join(generated, 'projects.list'))
-    eq(
-        got,
-        """\
-forweb.git John+Doe
-""",
-        )
+    eq( got, "forweb.git John+Doe",)
     got = os.listdir(os.path.join(repos, 'fordaemon.git'))
     assert 'git-daemon-export-ok' in got, \
         "git-daemon-export-ok not created: %r" % got
