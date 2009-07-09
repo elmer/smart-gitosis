@@ -72,7 +72,7 @@ description = blah blah
         )
     run_hook.post_update(cfg, admin_repository)
     got = readFile(os.path.join(repos, 'forweb.git', 'description'))
-    eq(got, 'blah blah\n')
+    eq(got, 'blah blah')
     got = os.listdir(generated)
     eq(got, ['projects.list'])
     got = readFile(os.path.join(generated, 'projects.list'))
