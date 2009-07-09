@@ -80,13 +80,15 @@ def filter_repositories(repo_dir, config_repos):
     """
     filtered_repos = []
     for repo in config_repos:
-        if path.exists(path.join(repo_dir, repo.name)) or \
-           path.exists(path.join(repo_dir, "%s.git" % repo.name)):
-            filtered_repos.append(repo)
-        else:
-            log.warning(
-                'Cannot find %(name)r in %(repo_dir)r'
-                % dict(name=repo.name, repo_dir=repo_dir))
+        if not path.exist(path.join(repo_dir, repo.name)):
+            repo.name = "%s.git" % repo.name
+            if not path.exists(path.join(repo_dir, repo.name)):
+                log.warning(
+                    'Cannot find %(name)r in %(repo_dir)r'
+                    % dict(name=repo.name, repo_dir=repo_dir))
+                continue
+        filtered_repos.append(repo)
+            
     return filtered_repos
 
 def generate_project_list(config):
