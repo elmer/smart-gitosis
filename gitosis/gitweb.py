@@ -63,7 +63,7 @@ def get_repositories(config):
         if not header or header[0] != 'repo':
             continue
 
-        repo = Repository(name=name, section=section)
+        repo = Repository(name=header[1:], section=section)
 
         try:
             owner = config.get(section, 'owner')
