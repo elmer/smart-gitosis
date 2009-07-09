@@ -46,10 +46,7 @@ def post_update(cfg, git_dir):
         os.path.join(generated, 'projects.list'))
     gitdaemon.set_export_ok(cfg)
     authorized_keys = util.getSSHAuthorizedKeysPath(config=cfg)
-    ssh.writeAuthorizedKeys(
-        path=authorized_keys,
-        keydir=os.path.join(export, 'keydir'),
-        )
+    ssh.writeAuthorizedKeys( authorized_keys, os.path.join(export, 'keydir'))
 
 class Main(app.App):
     def create_parser(self):
