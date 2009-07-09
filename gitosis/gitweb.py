@@ -104,10 +104,8 @@ def generate_project_list(config):
 
     :param config: configuration to read projects from
     :type config: RawConfigParser
-
-    :param fp: writable for ``projects.list``
-    :type fp: (file-like, anything with ``.write(data)``)
     """
+
     log = logging.getLogger('gitosis.gitweb.generate_projects_list')
     log.debug("WTF")
 
