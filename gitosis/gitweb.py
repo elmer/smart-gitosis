@@ -95,7 +95,6 @@ def filter_repositories(repo_dir, config_repos):
                 'Cannot find %(name)r in %(repo_dir)r'
                 % dict(name=repo.name, repo_dir=repo_dir))
 
-    log.debug("Filtered Repos: %s" % filtered_repos)
     return filtered_repos
 
 def generate_project_list(config):
@@ -107,7 +106,6 @@ def generate_project_list(config):
     """
 
     log = logging.getLogger('gitosis.gitweb.generate_projects_list')
-    log.debug("WTF")
 
     repo_dir = util.getRepositoryDir(config)
 
@@ -134,8 +132,7 @@ def generate_project_list(config):
         if not enable:
             continue
 
-        out.append(urllib.quote_plus(str(repo)))
-    log.debug("Out: %s" % out)
+        out.append(urllib.quote_plus("%s %s" % (repo.name, repo.owner)))
     return out
 
 def write_project_list(config, to):
@@ -177,7 +174,6 @@ def set_descriptions(config):
             continue
 
         name, = l
-        log.debug("Name: %s" % name)
 
         if not path.exists(path.join(repositories, name)):
             namedotgit = '%s.git' % name
