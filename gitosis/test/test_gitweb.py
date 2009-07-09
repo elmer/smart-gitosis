@@ -118,7 +118,7 @@ def test_description_none():
         config=cfg,
         )
     got = readFile(os.path.join(path, 'description'))
-    eq(got, 'foodesc\n')
+    eq(got, 'foodesc')
 
 def test_description_repo_missing():
     # configured but not created yet; before first push
@@ -166,7 +166,7 @@ def test_description_default():
         config=cfg,
         )
     got = readFile(os.path.join(path, 'description'))
-    eq(got, 'foodesc\n')
+    eq(got, 'foodesc')
 
 def test_description_not_set():
     tmp = maketemp()
@@ -202,4 +202,4 @@ def test_description_again():
         config=cfg,
         )
     got = readFile(os.path.join(path, 'description'))
-    eq(got, 'foodesc\n')
+    eq(got, 'foodesc')
