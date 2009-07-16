@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Enforce git-shell to only serve allowed by access control policy.
 directory. The client should refer to them without any extra directory
@@ -6,21 +7,23 @@ prefix. Repository names are forced to match ALLOW_RE.
 
 import logging
 
-import sys, os, re
+from os import path, umask, fork, environ, sep, execvp, wait
+from sys import exit
+from re import compile
 
 from gitosis import access
-from gitosis import repository
+from gitosis import git
 from gitosis import gitweb
 from gitosis import gitdaemon
-from gitosis import app
 from gitosis import util
 
-import amqplib.client_0_8 as amqp
+from gitosis.app import App
+
 import simplejson as json 
 
 log = logging.getLogger('gitosis.serve')
 
-ALLOW_RE = re.compile("^'/*(?P<path>[a-zA-Z0-9][a-zA-Z0-9@._-]*(/[a-zA-Z0-9][a-zA-Z0-9@._-]*)*)'$")
+ALLOW_RE = compile("^'/*(?P<path>[a-zA-Z0-9][a-zA-Z0-9@._-]*(/[a-zA-Z0-9][a-zA-Z0-9@._-]*)*)'$")
 
 COMMANDS_READONLY = [
     'git-upload-pack',
@@ -56,32 +59,7 @@ class WriteAccessDenied(AccessDenied):
 class ReadAccessDenied(AccessDenied):
     """Repository read access denied"""
 
-def amqp_config(config):
-    return {
-        'host': config.get("amqp", "host"),
-        'user_id': config.get("amqp", "user_id"),
-        'password': config.get("amqp", "password"),
-        'ssl': config.getboolean("amqp", "ssl"),
-        'exchange': config.get("amqp", "exchange"),
-        }
-    
-def send_amqp_message(host="localhost", user_id="guest", password="guest", ssl=True,
-                      exchange="gitosis.post_update", data={}):
-    m = json.dumps(data)
 
-    log.info('Sending "%s" to: %s' % (m, exchange))
-
-    msg = amqp.Message(m, content_type='text/plain')
-
-    conn = amqp.Connection(host, userid=user_id, password=password, ssl=ssl)
-
-    ch = conn.channel()
-    ch.access_request('/data', active=True, write=True)
-    ch.exchange_declare(exchange, 'fanout', auto_delete=False)
-    ch.basic_publish(msg, exchange)
-    ch.close()
-    conn.close()
-    return True
 
 def repository_path( cfg, user, command ):
     try:
@@ -100,8 +78,10 @@ def repository_path( cfg, user, command ):
         verb = '%s %s' % (verb, subverb)
 
     match = ALLOW_RE.match(args)
+
     if match is None:
         raise UnsafeArgumentsError()
+
     path = match.group('path')
     return path
 
@@ -212,8 +192,8 @@ def serve(cfg, user, command):
     assert not relpath.endswith('.git'), \
            'git extension should have been stripped: %r' % relpath
     repopath = '%s.git' % relpath
-    fullpath = os.path.join(topdir, repopath)
-    if (not os.path.exists(fullpath)
+    fullpath = path.join(topdir, repopath)
+    if (not path.exists(fullpath)
         and verb in COMMANDS_WRITE):
         # it doesn't exist on the filesystem, but the configuration
         # refers to it, we're serving a write request, and the user is
@@ -221,15 +201,15 @@ def serve(cfg, user, command):
 
         # create leading directories
         p = topdir
-        for segment in repopath.split(os.sep)[:-1]:
-            p = os.path.join(p, segment)
+        for segment in repopath.split(sep)[:-1]:
+            p = path.join(p, segment)
             util.mkdir(p, 0750)
 
-        repository.init(path=fullpath)
+        git.init(path=fullpath)
         gitweb.set_descriptions(config=cfg)
         generated = util.getGeneratedFilesDir(config=cfg)
         gitweb.write_project_list(cfg,
-            os.path.join(generated, 'projects.list')
+            path.join(generated, 'projects.list')
             )
         gitdaemon.set_export_ok(cfg)
 
@@ -241,9 +221,9 @@ def serve(cfg, user, command):
     return newcmd
 
 
-class Main(app.App):
+class Serve(App):
     def create_parser(self):
-        parser = super(Main, self).create_parser()
+        parser = super(Serve, self).create_parser()
         parser.set_usage('%prog [OPTS] USER')
         parser.set_description(
             'Allow restricted git operations under DIR')
@@ -256,18 +236,17 @@ class Main(app.App):
             parser.error('Missing argument USER.')
 
         main_log = logging.getLogger('gitosis.serve.main')
-        os.umask(0022)
+        umask(0022)
 
-        cmd = os.environ.get('SSH_ORIGINAL_COMMAND', None)
+        cmd = environ.get('SSH_ORIGINAL_COMMAND', None)
+
         if cmd is None:
             main_log.error('Need SSH_ORIGINAL_COMMAND in environment.')
-            sys.exit(1)
+            exit(1)
 
-        main_log.debug('Got command %(cmd)r' % dict(
-            cmd=cmd,
-            ))
+        main_log.debug('Got command %r' % cmd)
 
-        os.chdir(os.path.expanduser('~'))
+        chdir(path.expanduser('~'))
 
         try:
             newcmd = serve(
@@ -277,22 +256,24 @@ class Main(app.App):
                 )
         except ServingError, e:
             main_log.error('%s', e)
-            sys.exit(1)
+            exit(1)
 
         ## if we are writing then we need to 
 
         main_log.debug('Serving %s', newcmd)
-        pid = os.fork()
+        pid = fork()
         if not pid:
-            os.execvp('git', ['git', 'shell', '-c', newcmd])
+            execvp('git', ['git', 'shell', '-c', newcmd])
             main_log.error('Cannot execute git-shell.')
-            sys.exit(1)
+            exit(1)
         else:
-            os.wait()
+            wait()
             try:
                 if (should_send_message( cfg=cfg, user=user, command=cmd )):
                     send_amqp_message(data={'repository': repository_path(cfg=cfg, user=user, command=cmd)}, **amqp_config(cfg))
             except ServingError, e:
                 main_log.error('%s', e)
-                sys.exit(1)
+                exit(1)
 
+if __name__ == "__main__":
+    

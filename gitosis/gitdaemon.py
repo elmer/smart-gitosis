@@ -1,6 +1,6 @@
 import errno
 import logging
-import os
+from os import path, remove
 
 from ConfigParser import NoSectionError, NoOptionError
 
@@ -14,19 +14,14 @@ def export_ok_path(repopath):
 
 def allow_export(repopath):
     p = export_ok_path(repopath)
-    file(p, 'a').close()
+    # creates the damn file
+    file(p, 'w').close()
 
 def deny_export(repopath):
     p = export_ok_path(repopath)
-    try:
-        os.unlink(p)
-    except OSError, e:
-        if e.errno == errno.ENOENT:
-            pass
-        else:
-            raise
+    remove(p)
 
-def _extract_reldir(topdir, dirpath):
+def reldir(topdir, dirpath):
     if topdir == dirpath:
         return '.'
     prefix = topdir + '/'
@@ -34,49 +29,36 @@ def _extract_reldir(topdir, dirpath):
     reldir = dirpath[len(prefix):]
     return reldir
 
-def set_export_ok(config):
-    repositories = util.getRepositoryDir(config)
-
-    try:
-        global_enable = config.getboolean('gitosis', 'daemon')
-    except (NoSectionError, NoOptionError):
-        global_enable = False
-    log.debug(
-        'Global default is %r',
-        {True: 'allow', False: 'deny'}.get(global_enable),
-        )
-
+def set_export_ok(repo_dir, repositories):
     def _error(e):
         if e.errno == errno.ENOENT:
             pass
         else:
             raise e
 
-    for (dirpath, dirnames, filenames) \
-            in os.walk(repositories, onerror=_error):
+    for (dirpath, dirnames, filenames) in os.walk(repo_dir, onerror=_error):
         # oh how many times i have wished for os.walk to report
         # topdir and reldir separately, instead of dirpath
-        reldir = _extract_reldir(
-            topdir=repositories,
-            dirpath=dirpath,
-            )
+        relative = reldir(repo_dir, dirpath)
 
-        log.debug('Walking %r, seeing %r', reldir, dirnames)
+        log.debug('Walking %r, seeing %r', relative, dirnames)
 
         to_recurse = []
         repos = []
+
         for dirname in dirnames:
             if dirname.endswith('.git'):
                 repos.append(dirname)
             else:
                 to_recurse.append(dirname)
+
         dirnames[:] = to_recurse
 
         for repo in repos:
             name, ext = os.path.splitext(repo)
-            if reldir != '.':
-                name = os.path.join(reldir, name)
-            assert ext == '.git'
+            if relative != '.':
+                name = os.path.join(relative, name)
+
             try:
                 enable = config.getboolean('repo %s' % name, 'daemon')
             except (NoSectionError, NoOptionError):

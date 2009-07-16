@@ -5,7 +5,7 @@ import os
 from ConfigParser import RawConfigParser
 
 from gitosis import init
-from gitosis import repository
+from gitosis import git
 
 from gitosis.test import util
 
@@ -117,7 +117,7 @@ def test_init_admin_repository():
     got = util.readFile(hook).splitlines()
     assert 'gitosis-run-hook post-update' in got
     export_dir = os.path.join(tmp, 'export')
-    repository.export(git_dir=admin_repository,
+    git.export(git_dir=admin_repository,
                       path=export_dir)
     eq(sorted(os.listdir(export_dir)),
        sorted(['gitosis.conf', 'keydir']))

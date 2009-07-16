@@ -8,7 +8,7 @@ from cStringIO import StringIO
 from ConfigParser import RawConfigParser
 
 from gitosis import serve
-from gitosis import repository
+from gitosis import git
 
 from gitosis.test import util
 
@@ -212,7 +212,7 @@ def test_bad_forbiddenCommand_write_readAccess_space():
 
 def test_simple_read_dash():
     tmp = util.maketemp()
-    repository.init(path.join(tmp, 'foo.git'))
+    git.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)
@@ -230,7 +230,7 @@ def test_simple_read_dash():
 
 def test_simple_read_space():
     tmp = util.maketemp()
-    repository.init(path.join(tmp, 'foo.git'))
+    git.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)
@@ -248,7 +248,7 @@ def test_simple_read_space():
 
 def test_simple_write_dash():
     tmp = util.maketemp()
-    repository.init(path.join(tmp, 'foo.git'))
+    git.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)
@@ -266,7 +266,7 @@ def test_simple_write_dash():
 
 def test_simple_write_space():
     tmp = util.maketemp()
-    repository.init(path.join(tmp, 'foo.git'))
+    git.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)
@@ -556,7 +556,7 @@ def test_absolute():
     # relative paths; you'll never really want absolute paths via
     # gitosis, anyway.
     tmp = util.maketemp()
-    repository.init(path.join(tmp, 'foo.git'))
+    git.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)
@@ -574,7 +574,7 @@ def test_absolute():
 
 def test_typo_writeable():
     tmp = util.maketemp()
-    repository.init(path.join(tmp, 'foo.git'))
+    git.init(path.join(tmp, 'foo.git'))
     cfg = RawConfigParser()
     cfg.add_section('gitosis')
     cfg.set('gitosis', 'repositories', tmp)

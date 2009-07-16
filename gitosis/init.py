@@ -11,7 +11,7 @@ from pkg_resources import resource_filename
 from cStringIO import StringIO
 from ConfigParser import RawConfigParser
 
-from gitosis import repository
+from gitosis import git
 from gitosis import run_hook
 from gitosis import ssh
 from gitosis import util
@@ -39,7 +39,7 @@ def ssh_extract_user(pubkey):
         raise InsecureSSHKeyUsername(repr(user))
 
 def initial_commit(git_dir, cfg, pubkey, user):
-    repository.fast_import(
+    git.fast_import(
         git_dir=git_dir,
         commit_msg='Automatic creation of gitosis repository.',
         committer='Gitosis Admin <%s>' % user,
@@ -70,14 +70,14 @@ def init_admin_repository(
     pubkey,
     user,
     ):
-    repository.init(
+    git.init(
         path=git_dir,
         template=resource_filename('gitosis.templates', 'admin')
         )
-    repository.init(
+    git.init(
         path=git_dir,
         )
-    if not repository.has_initial_commit(git_dir):
+    if not git.has_initial_commit(git_dir):
         log.info('Making initial commit...')
         # ConfigParser does not guarantee order, so jump through hoops
         # to make sure [gitosis] is first

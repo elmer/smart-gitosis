@@ -16,6 +16,9 @@ def haveAccess(config, user, mode, path):
     Returns ``None`` for no access, or a tuple of toplevel directory
     containing repositories and a relative path to the physical repository.
     """
+
+    access_url = config.get("rsp", "haveAccessURL")
+
     log = logging.getLogger('gitosis.access.haveAccess')
 
     log.debug(
@@ -31,17 +34,14 @@ def haveAccess(config, user, mode, path):
 
         path = basename
 
-    response = check_with_rsp(config, user, mode, path)
+    response = check_with_rsp(access_url, user, mode, path)
     if response:
         return response
 
-    for groupname in group.getMembership(config=config, user=user):
-        try:
-            repos = config.get('group %s' % groupname, mode)
-        except (NoSectionError, NoOptionError):
-            repos = []
-        else:
-            repos = repos.split()
+    groups = config.groups()
+    
+    for group in Group.member_of(user, groups):
+        repos = group.modes[mode]
 
         mapping = None
 
@@ -77,15 +77,14 @@ def haveAccess(config, user, mode, path):
                 % dict( prefix=prefix, path=mapping,))
             return (prefix, mapping)
 
-def check_with_rsp(config, user, mode, path):
+def check_with_rsp(access_url, user, mode, path):
     """
     expects to find the following in the gitosis config 
     [rsp]
     haveAccessURL = www.example.org
     """
-    access_url = config.get('rsp', 'haveAccessURL')
-    if not access_url:
-        raise Exception("uh... not configured with an haveAccessURL yet, add it under an [rsp] section")
+#    if not access_url:
+#        raise Exception("uh... not configured with an haveAccessURL yet, add it under an [rsp] section")
 
     basename, ext = os.path.splitext(path)
     if ext == '.git':

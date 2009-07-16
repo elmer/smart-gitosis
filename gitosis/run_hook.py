@@ -1,15 +1,16 @@
+#!/usr/bin/env python
 """
 Perform gitosis actions for a git hook.
 """
 
 import errno
 import logging
-import os
 import sys
 import shutil
-import ConfigParser
 
-from gitosis import repository
+from os import rename, path, umask, environ
+
+from gitosis import git
 from gitosis import ssh
 from gitosis import gitweb
 from gitosis import gitdaemon
@@ -18,8 +19,8 @@ from gitosis import util
 
 log = logging.getLogger('gitosis.run_hook')
 
-def post_update(cfg, git_dir):
-    export = os.path.join(git_dir, 'gitosis-export')
+def post_update(git_dir, generated_files, authorized_keys):
+    export = path.join(git_dir, 'gitosis-export')
 
     try:
         shutil.rmtree(export)
@@ -29,31 +30,32 @@ def post_update(cfg, git_dir):
         else:
             raise
 
-    repository.export(git_dir=git_dir, path=export)
+    git.export(git_dir=git_dir, path=export)
 
-    os.rename(
-        os.path.join(export, 'gitosis.conf'),
-        os.path.join(export, '..', 'gitosis.conf'),
+    rename(
+        path.join(export, 'gitosis.conf'),
+        path.join(export, '..', 'gitosis.conf'),
         )
 
-    cfg.read(os.path.join(export, '..', 'gitosis.conf'))
+    repo_dir = config.repositories_dir()
+    repositories = config.get_repositories()
+    gitweb_enabled = config.getweb_enabled()
+    daemon_enabled = config.daemon_enabled()
 
-    gitweb.set_descriptions(
-        config=cfg,
-        )
-    generated = util.getGeneratedFilesDir(config=cfg)
-    gitweb.write_project_list(cfg,
-        os.path.join(generated, 'projects.list'))
-    gitdaemon.set_export_ok(cfg)
-    authorized_keys = util.getSSHAuthorizedKeysPath(config=cfg)
-    ssh.writeAuthorizedKeys(authorized_keys, os.path.join(export, 'keydir'))
+    gitweb.set_descriptions(repositories)
+    if gitweb_enabled:
+        gitweb.write_project_list(path.join(generated_files, 'projects.list'))
 
-class Main(app.App):
+    if daemon_enabled:
+        gitdaemon.set_export_ok(repo_dir)
+
+    ssh.writeAuthorizedKeys(authorized_keys, path.join(export, 'keydir'))
+
+class RunHook(app.App):
     def create_parser(self):
-        parser = super(Main, self).create_parser()
+        parser = super(RunHook, self).create_parser()
         parser.set_usage('%prog [OPTS] HOOK')
-        parser.set_description(
-            'Perform gitosis actions for a git hook')
+        parser.set_description('Perform gitosis actions for a git hook')
         return parser
 
     def handle_args(self, parser, cfg, options, args):
@@ -62,9 +64,10 @@ class Main(app.App):
         except ValueError:
             parser.error('Missing argument HOOK.')
 
-        os.umask(0022)
+        umask(0022)
 
-        git_dir = os.environ.get('GIT_DIR')
+        git_dir = environ.get('GIT_DIR')
+
         if git_dir is None:
             log.error('Must have GIT_DIR set in enviroment')
             sys.exit(1)
@@ -75,3 +78,6 @@ class Main(app.App):
             log.info('Done.')
         else:
             log.warning('Ignoring unknown hook: %r', hook)
+
+if __name__ == "__main__":
+    RunHook().run()

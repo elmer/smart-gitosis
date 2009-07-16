@@ -33,16 +33,20 @@ from ConfigParser import NoSectionError, NoOptionError
 from gitosis import util
 
 class Repository(object):
-    def __init__(self, name="", section="", owner=None):
+    def __init__(self, name="", section="", owner=None, directory=""):
         self.name = name
         self.owner = owner
-        self.section=section
+        self.section = section
+        self.directory = directory
 
     def details(self):
         if self.owner:
             return [self.name, self.owner]
         else:
             return [self.name]
+
+    def path(self):
+        path.join(self.directory, self.name)
 
     def __str__(self):
         return self.__repr__()
@@ -57,7 +61,11 @@ def _escape_filename(s):
     s = s.replace('"', '\\"')
     return s
 
+# This function needs a data structure such that
+# we have a list of "sections" and each section
+# has in it the section's owner
 def get_repositories(config):
+    repo_dir = util.getRepositoryDir(config)
     repositories = []
 
     for section in config.sections():
@@ -66,7 +74,8 @@ def get_repositories(config):
         if not header or header[0] != 'repo':
             continue
 
-        repo = Repository(name=" ".join(header[1:]), section=section)
+        name = " ".join(header[1:])
+        repo = Repository(name=name, section=section, directory=repo_dir)
 
         try:
             owner = config.get(section, 'owner')
@@ -77,8 +86,13 @@ def get_repositories(config):
 
         repositories.append(repo)
     return repositories
-    
 
+#def repository_exits(repo):
+#    return path.exists(repo.path())
+#
+#def filter_repositories(repos):
+#    [r for r in repos if repository_exits(r)]
+    
 def filter_repositories(repo_dir, config_repos):
     """
     This function takes a repository directory and a list of repositories
@@ -88,7 +102,7 @@ def filter_repositories(repo_dir, config_repos):
     log = logging.getLogger('gitosis.gitweb.filter_repositories')
     filtered_repos = []
     for repo in config_repos:
-        if path.exists(path.join(repo_dir, repo.name)):
+        if repository_exits(repo):
             filtered_repos.append(repo)
         elif path.exists(path.join(repo_dir, "%s.git" % repo.name)):
             repo.name = "%s.git" % repo.name
@@ -100,7 +114,7 @@ def filter_repositories(repo_dir, config_repos):
 
     return filtered_repos
 
-def generate_project_list(config):
+def generate_project_list(repo_dir):
     """
     Generate projects list for ``gitweb``.
 
@@ -108,87 +122,35 @@ def generate_project_list(config):
     :type config: RawConfigParser
     """
 
-    log = logging.getLogger('gitosis.gitweb.generate_projects_list')
-
-    repo_dir = util.getRepositoryDir(config)
-
-    try:
-        global_enable = config.getboolean('gitosis', 'gitweb')
-    except (NoSectionError, NoOptionError):
-        global_enable = False
+    ##try:
+    ##    global_enable = config.getboolean('gitosis', 'gitweb')
+    ##except (NoSectionError, NoOptionError):
+    ##    global_enable = False
 
     repositories = filter_repositories(repo_dir, get_repositories(config))
 
-    out = []
+    return [r.quoted_details() for r in repositories if repo.gitweb)]
 
-    for repo in repositories:
-        try:
-            enable = config.getboolean(repo.section, 'gitweb')
-        except (NoSectionError, NoOptionError):
-            enable = global_enable
-
-        try:
-            enable = config.getboolean(repo.section, 'gitweb')
-        except (NoSectionError, NoOptionError):
-            enable = global_enable
-
-        if not enable:
-            continue
-        s = [urllib.quote_plus(x) for x in repo.details()]
-        out.append(" ".join(s))
-    return out
-
-def write_project_list(config, to):
+def write_project_list(repo_dir, to):
     """
     Generate projects list for ``gitweb``.
 
-    :param config: configuration to read projects from
-    :type config: RawConfigParser
-
-    :param path: path to write projects list to
-    :type path: str
+    :param repo_dir: the path to look for repositories
+    :param to: path to write projects list to
     """
     with open(to, 'w') as f:
-        f.write("\n".join(generate_project_list(config)))
+        f.write("\n".join(generate_project_list(repo_dir)))
 
 
-def set_descriptions(config):
+def set_descriptions(repositories):
     """
     Set descriptions for gitweb use.
     """
     log = logging.getLogger('gitosis.gitweb.set_descriptions')
 
-    repositories = util.getRepositoryDir(config)
+    for repo in repositories:
+        if repo.description:
+            p = path.join(repo.path(), "description")
 
-    for section in config.sections():
-        l = section.split(None, 1)
-        type_ = l.pop(0)
-        if type_ != 'repo':
-            continue
-        if not l:
-            continue
-
-        try:
-            description = config.get(section, 'description')
-        except (NoSectionError, NoOptionError):
-            continue
-
-        if not description:
-            continue
-
-        name, = l
-
-        if not path.exists(path.join(repositories, name)):
-            namedotgit = '%s.git' % name
-            if path.exists(path.join(repositories, namedotgit)):
-                name = namedotgit
-            else:
-                log.warning(
-                    'Cannot find %(name)r in %(repositories)r'
-                    % dict(name=name, repositories=repositories))
-                continue
-
-        p = path.join(repositories, name, 'description')
-
-        with open(p, 'w') as f:
-            f.write(description)
+            with open(p, 'w') as f:
+                f.write(description)

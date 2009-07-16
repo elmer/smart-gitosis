@@ -1,36 +1,28 @@
-import os
-import sys
-import logging
-import optparse
-import errno
-import ConfigParser
-from util import read_config
+from config import Config
+from os import path
+from optparse import OptionParser
 
-log = logging.getLogger('gitosis.app')
+import logging
+
+class NotImplemented(Exception):
+    pass
 
 class App(object):
     name = None
 
-    def run(class_):
-        app = class_()
-        return app.main()
-    run = classmethod(run)
+    def __init__(self):
+        self.parser = self.create_parser()
+        self.config = Config(options.config)
+        self.setup_logging()
 
-    def main(self):
-        self.setup_basic_logging()
-        parser = self.create_parser()
+    def run(self):
         (options, args) = parser.parse_args()
-        cfg = read_config(options.config)
-        self.setup_logging(cfg)
-        self.handle_args(parser, cfg, options, args)
-
-    def setup_basic_logging(self):
-        logging.basicConfig()
+        self.handle_args(parser, options, args)
 
     def create_parser(self):
-        parser = optparse.OptionParser()
+        parser = OptionParser()
         parser.set_defaults(
-            config=os.path.expanduser('~/.gitosis.conf'),
+            config=path.expanduser('~/.gitosis.conf'),
             )
         parser.add_option('--config',
                           metavar='FILE',
@@ -39,23 +31,11 @@ class App(object):
 
         return parser
 
-    def setup_logging(self, cfg):
-        try:
-            loglevel = cfg.get('gitosis', 'loglevel')
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError):
-            pass
-        else:
-            try:
-                symbolic = logging._levelNames[loglevel]
-            except KeyError:
-                log.warning(
-                    'Ignored invalid loglevel configuration: %r',
-                    loglevel,
-                    )
-            else:
-                logging.root.setLevel(symbolic)
+    def setup_logging(self):
+        logging.basicConfig()
+        log_level = self.config.log_level()
+        symbolic = logging._levelNames[log_level]
+        logging.root.setLevel(symbolic)
 
-    def handle_args(self, parser, cfg, options, args):
-        if args:
-            parser.error('not expecting arguments')
+    def handle_args(self, parser, options, args):
+        raise NotImplemented()
