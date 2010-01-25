@@ -36,6 +36,8 @@ def haveAccess(config, user, mode, path):
         return response
 
     for groupname in group.getMembership(config=config, user=user):
+        log.debug('trying: user %(user)r in group %(group)r' % dict(user=user, group=groupname))
+
         try:
             repos = config.get('group %s' % groupname, mode)
         except (NoSectionError, NoOptionError):
@@ -84,11 +86,15 @@ def check_with_rsp(config, user, mode, path):
     haveAccessURL = www.example.org
     """
 
+    log = logging.getLogger('gitosis.access.check_with_rsp')
+
     if not config.has_section('rsp'):
+        log.debug("No RSP section");
         return None
 
     access_url = config.get('rsp', 'haveAccessURL')
     if not access_url:
+        log.debug("No 'haveAccessURL' set");
         raise Exception("uh... not configured with an haveAccessURL yet, add it under an [rsp] section")
 
     basename, ext = os.path.splitext(path)
@@ -97,7 +103,15 @@ def check_with_rsp(config, user, mode, path):
 
     conn = httplib.HTTPConnection(access_url)
     conn.request("GET", "/hosts/%s/committers/%s" % (path, user))
-    http_response = conn.getresponse()
+
+    try:
+        log.debug("Attempting to fetch from URL %(url)r" % dict( url=access_url ));
+        http_response = conn.getresponse()
+    except:
+        log.debug("Unable to fetch data from haveAccessURL");
+        return None
+
+    log.debug("Got back reponse: %(code)r" % dict( code=http_response.status ));
 
     if http_response.status in range(200,300):
         # basically I'm lazy and didn't want to handle redirects
@@ -108,8 +122,10 @@ def check_with_rsp(config, user, mode, path):
         return None
 
     if response['canCommit']:
+        log.debug("User '%(user)r' can commit" % dict( user=user ));
         prefix = 'repositories'
         mapping = path
         return (prefix, mapping)
     else:
+        log.debug("User '%(user)r' cannot commit" % dict( user=user ));
         return None
