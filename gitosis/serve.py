@@ -107,6 +107,10 @@ def repository_path( cfg, user, command ):
 
 ## determines if we should send a message or not
 def should_send_message( cfg, user, command ):
+
+    if not cfg.has_section('amqp'):
+        return False
+
     if '\n' in command:
         raise CommandMayNotContainNewlineError()
     try:

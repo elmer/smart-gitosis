@@ -83,6 +83,10 @@ def check_with_rsp(config, user, mode, path):
     [rsp]
     haveAccessURL = www.example.org
     """
+
+    if not config.has_section('rsp'):
+        return None
+
     access_url = config.get('rsp', 'haveAccessURL')
     if not access_url:
         raise Exception("uh... not configured with an haveAccessURL yet, add it under an [rsp] section")
