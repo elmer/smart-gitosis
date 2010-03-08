@@ -103,7 +103,7 @@ def check_with_rsp(config, user, mode, path):
         pass
     
     headers = dict() 
-    if( username and password ):
+    if username and password:
         auth =  base64.encodestring(username + ':' + password).strip
         headers['Authorization'] = "Basic %s" % auth
 
