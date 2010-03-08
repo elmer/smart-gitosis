@@ -2,6 +2,7 @@ from __future__ import with_statement
 import errno
 import os
 import ConfigParser
+import warnings
 
 class CannotReadConfigError(Exception):
     """Unable to read config file"""
@@ -53,7 +54,8 @@ def read_config(file_name):
             cfg.readfp(f)
     except (IOError, OSError), e:
         if e.errno == errno.ENOENT:
-            raise ConfigFileDoesNotExistError(str(e))
+            # raise ConfigFileDoesNotExistError(str(e))
+            warnings.warn('%s does not currently exist, continuing' % file_name, RuntimeWarning, 0);
         else:
             raise CannotReadConfigError(str(e))
     return cfg

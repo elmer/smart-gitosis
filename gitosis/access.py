@@ -1,6 +1,7 @@
 import os, logging
 import httplib
 import simplejson as json
+import base64 as base64
 
 from ConfigParser import NoSectionError, NoOptionError
 
@@ -93,6 +94,19 @@ def check_with_rsp(config, user, mode, path):
         return None
 
     access_url = config.get('rsp', 'haveAccessURL')
+    username = None
+    password = None
+    try:
+        username = config.get('rsp', 'acl_user')
+        password = config.get('rsp', 'acl_pass')
+    except:
+        pass
+    
+    headers = dict() 
+    if( username and password ):
+        auth =  string.strip(base64.encodestring(user + ':' + passwd))
+        headers['Authorization'] = "Basic %s" % auth
+
     if not access_url:
         log.debug("No 'haveAccessURL' set");
         raise Exception("uh... not configured with an haveAccessURL yet, add it under an [rsp] section")
@@ -102,7 +116,7 @@ def check_with_rsp(config, user, mode, path):
         path = basename
 
     conn = httplib.HTTPConnection(access_url)
-    conn.request("GET", "/hosts/%s/committers/%s" % (path, user))
+    conn.request("GET", "/hosts/%s/committers/%s" % (path, user), None, headers)
 
     try:
         log.debug("Attempting to fetch from URL %(url)r" % dict( url=access_url ));
